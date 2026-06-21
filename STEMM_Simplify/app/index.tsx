@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   StatusBar,
   StyleSheet,
   Text,
@@ -13,9 +13,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function StartupScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
+
   const handleStart = () => {
     setLoading(true);
+
+    // Simulate a tiny delay for button feedback, then route to Register
+    setTimeout(() => {
+      setLoading(false);
+      router.replace("/RegisterScreen");
+    }, 300);
   };
 
   return (

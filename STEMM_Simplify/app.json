@@ -2,6 +2,9 @@
   "expo": {
     "name": "STEMM_Simplify",
     "slug": "STEMM_Simplify",
+    "androidNavigationBar": {
+      "backgroundColor": "#000000"
+    },
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

@@ -1,0 +1,335 @@
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import * as MediaLibrary from "expo-media-library";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function ParachuteAdjustment() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const { startTime } = params;
+
+  const { heightNo, timeNo } = params;
+
+  // State for user inputs
+  const [dropHeight, setDropHeight] = useState("");
+  const [fallTime, setFallTime] = useState("");
+  const [videoUri, setVideoUri] = useState<string | null>(null);
+
+  const recordVideo = async () => {
+    const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+    const libraryPermission = await MediaLibrary.requestPermissionsAsync();
+
+    if (
+      cameraPermission.status !== "granted" ||
+      libraryPermission.status !== "granted"
+    ) {
+      Alert.alert(
+        "Permission Needed",
+        "We need camera and gallery access to save your experiment!",
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: "videos" as any,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const localUri = result.assets[0].uri;
+      setVideoUri(localUri);
+      try {
+        // 4. Save to Gallery
+        await MediaLibrary.saveToLibraryAsync(localUri);
+        Alert.alert("Success", "Video saved to your gallery!");
+      } catch (error) {
+        console.error("Save Error:", error);
+        Alert.alert("Error", "Could not save video to gallery.");
+      }
+    }
+  };
+  return (
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "black" }}
+      edges={["top", "bottom"]}
+    >
+      {/* Black Header Area */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#FFF" />
+        </TouchableOpacity>
+
+        <View style={styles.headerTitleRow}>
+          <View>
+            <Text style={styles.headerTitle}>With Toy Adjustment</Text>
+            <Text style={styles.headerSubtitle}>
+              Parachute attached — same height
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
+        {/* Instruction Alert Box (Green Theme) */}
+        <View style={styles.alertBox}>
+          <Text style={styles.alertText}>
+            🪂 Attach your parachute to the toy. Drop it from the{" "}
+            <Text style={{ fontWeight: "bold" }}>same height</Text> as before.
+            Record the height and time.
+          </Text>
+        </View>
+
+        {/* Measurement Input Card */}
+        <View style={styles.whiteCard}>
+          <Text style={styles.sectionTitle}>Enter Your Measurements</Text>
+
+          {/* Drop Height Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>
+              Drop Height <Text style={styles.unitText}>(metres)</Text>
+            </Text>
+            <TextInput
+              style={styles.textInput}
+              value={dropHeight}
+              onChangeText={setDropHeight}
+              keyboardType="decimal-pad"
+              placeholder="e.g. 1.50"
+              placeholderTextColor="#CCC"
+              returnKeyType="done"
+            />
+          </View>
+
+          {/* Fall Time Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>
+              Fall Time <Text style={styles.unitText}>(seconds)</Text>
+            </Text>
+            <TextInput
+              style={styles.textInput}
+              value={fallTime}
+              onChangeText={setFallTime}
+              keyboardType="decimal-pad"
+              placeholder="e.g. 1.20"
+              placeholderTextColor="#CCC"
+              returnKeyType="done"
+            />
+          </View>
+        </View>
+        <TouchableOpacity
+          style={styles.recordButton}
+          onPress={recordVideo}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="videocam" size={24} color="#00C853" />
+          <Text style={styles.recordButtonText}>Record Impact Video</Text>
+          {videoUri && (
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color="green"
+              style={{ marginLeft: 10 }}
+            />
+          )}
+        </TouchableOpacity>
+      </ScrollView>
+
+      {/* Results Button Footer (Mint Green) */}
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={styles.resultsButton}
+          activeOpacity={0.8}
+          onPress={() => {
+            if (!dropHeight || !fallTime) {
+              Alert.alert(
+                "Missing Data",
+                "Please enter height and time first.",
+              );
+              return;
+            }
+            router.push({
+              pathname: "./result",
+              params: {
+                heightNo: heightNo, // From Page 1
+                timeNo: timeNo, // From Page 1
+                heightWith: dropHeight, // From Page 2
+                timeWith: fallTime, // From Page 2
+                startTime: startTime,
+              },
+            });
+          }}
+        >
+          <Text style={styles.resultsButtonText}>See Results</Text>
+          <Ionicons name="chevron-forward" size={20} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: {
+    backgroundColor: "#000",
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 10,
+  },
+  backButton: {
+    marginBottom: 20,
+  },
+  headerTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  stepCircle: {
+    backgroundColor: "#00C853", // Green from screenshot
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 15,
+  },
+  stepNumber: {
+    color: "#FFF",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  headerTitle: {
+    color: "#FFF",
+    fontSize: 22,
+    fontWeight: "bold",
+  },
+  headerSubtitle: {
+    color: "#999",
+    fontSize: 14,
+    marginTop: 4,
+  },
+  progressBarContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  progressSegment: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 100,
+    backgroundColor: "#F7F8FA",
+    flexGrow: 1,
+  },
+  alertBox: {
+    backgroundColor: "#E8F5E9", // Light green
+    borderWidth: 1,
+    borderColor: "#C8E6C9",
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 20,
+  },
+  alertText: {
+    color: "#2E7D32", // Dark green
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  whiteCard: {
+    backgroundColor: "#FFF",
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#EFEFEF",
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 20,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 8,
+  },
+  unitText: {
+    color: "#999",
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
+    borderRadius: 12,
+    padding: 18,
+    fontSize: 18,
+    color: "#333",
+    backgroundColor: "#FFF",
+  },
+  footer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    backgroundColor: "#FFF",
+  },
+  resultsButton: {
+    backgroundColor: "#00C853", // Mint green from screenshot
+    borderRadius: 15,
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    // Adding a slight shadow for depth
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  resultsButtonText: {
+    color: "#FFF",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginRight: 5,
+  },
+  recordButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFF",
+    borderWidth: 2,
+    borderColor: "#00C853",
+    borderRadius: 12,
+    padding: 15,
+    borderStyle: "dashed",
+  },
+  recordButtonText: {
+    color: "#00C853",
+    fontWeight: "bold",
+    marginLeft: 10,
+    fontSize: 16,
+  },
+});

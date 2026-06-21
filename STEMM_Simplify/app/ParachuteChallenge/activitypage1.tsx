@@ -1,0 +1,289 @@
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import * as MediaLibrary from "expo-media-library";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function BaselineDrop() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const { startTime } = params;
+
+  // State for user inputs (Baseline)
+  const [dropHeight, setDropHeight] = useState("");
+  const [fallTime, setFallTime] = useState("");
+  const [videoUri, setVideoUri] = useState<string | null>(null);
+
+  const recordVideo = async () => {
+    const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+    const libraryPermission = await MediaLibrary.requestPermissionsAsync();
+
+    if (
+      cameraPermission.status !== "granted" ||
+      libraryPermission.status !== "granted"
+    ) {
+      Alert.alert(
+        "Permission Needed",
+        "We need camera and gallery access to save your experiment!",
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: "videos" as any,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const localUri = result.assets[0].uri;
+      setVideoUri(localUri);
+      try {
+        await MediaLibrary.saveToLibraryAsync(localUri);
+        Alert.alert("Success", "Video saved to your gallery!");
+      } catch (error) {
+        console.error("Save Error:", error);
+        Alert.alert("Error", "Could not save video to gallery.");
+      }
+    }
+  };
+
+  const handleNextStep = () => {
+    if (!dropHeight || !fallTime) {
+      Alert.alert(
+        "Missing Data",
+        "Please enter the baseline height and time first!",
+      );
+      return;
+    }
+
+    // Pack the data into the router backpack and send it to page 2!
+    router.push({
+      pathname: "./activitypage2",
+      params: {
+        heightNo: dropHeight,
+        timeNo: fallTime,
+        startTime: startTime,
+      },
+    });
+  };
+
+  return (
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "black" }}
+      edges={["top", "bottom"]}
+    >
+      {/* Black Header Area */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#FFF" />
+        </TouchableOpacity>
+
+        <View style={styles.headerTitleRow}>
+          <View>
+            <Text style={styles.headerTitle}>Baseline Test</Text>
+            <Text style={styles.headerSubtitle}>
+              Drop 1: No parachute attached
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
+        {/* Instruction Alert Box (Orange Theme for Page 1) */}
+        <View style={styles.alertBox}>
+          <Text style={styles.alertText}>
+            Drop the toy <Text style={{ fontWeight: "bold" }}>without</Text> the
+            parachute first to establish a baseline speed. Measure the height
+            and use a stopwatch to record the fall time.
+          </Text>
+        </View>
+
+        {/* Measurement Input Card */}
+        <View style={styles.whiteCard}>
+          <Text style={styles.sectionTitle}>Enter Baseline Measurements</Text>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>
+              Drop Height <Text style={styles.unitText}>(metres)</Text>
+            </Text>
+            <TextInput
+              style={styles.textInput}
+              value={dropHeight}
+              onChangeText={setDropHeight}
+              keyboardType="decimal-pad"
+              placeholder="e.g. 1.50"
+              placeholderTextColor="#CCC"
+              returnKeyType="done"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>
+              Fall Time <Text style={styles.unitText}>(seconds)</Text>
+            </Text>
+            <TextInput
+              style={styles.textInput}
+              value={fallTime}
+              onChangeText={setFallTime}
+              keyboardType="decimal-pad"
+              placeholder="e.g. 0.85"
+              placeholderTextColor="#CCC"
+              returnKeyType="done"
+            />
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={styles.recordButton}
+          onPress={recordVideo}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="videocam" size={24} color="#FF5A00" />
+          <Text style={styles.recordButtonText}>Record Baseline Drop</Text>
+          {videoUri && (
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color="#FF5A00"
+              style={{ marginLeft: 10 }}
+            />
+          )}
+        </TouchableOpacity>
+      </ScrollView>
+
+      {/* Footer Next Button */}
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={styles.nextButton}
+          activeOpacity={0.8}
+          onPress={handleNextStep}
+        >
+          <Text style={styles.nextButtonText}>Next: Add Parachute</Text>
+          <Ionicons name="chevron-forward" size={20} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: {
+    backgroundColor: "#000",
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 10,
+  },
+  backButton: { marginBottom: 20 },
+  headerTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  headerTitle: { color: "#FFF", fontSize: 22, fontWeight: "bold" },
+  headerSubtitle: { color: "#FF5A00", fontSize: 14, marginTop: 4 },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 100,
+    backgroundColor: "#F7F8FA",
+    flexGrow: 1,
+  },
+  alertBox: {
+    backgroundColor: "#FFF3E0",
+    borderWidth: 1,
+    borderColor: "#FFE0B2",
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 20,
+  },
+  alertText: { color: "#E65100", fontSize: 14, lineHeight: 20 },
+  whiteCard: {
+    backgroundColor: "#FFF",
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#EFEFEF",
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 20,
+  },
+  inputGroup: { marginBottom: 20 },
+  inputLabel: { fontSize: 14, color: "#666", marginBottom: 8 },
+  unitText: { color: "#999" },
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
+    borderRadius: 12,
+    padding: 18,
+    fontSize: 18,
+    color: "#333",
+    backgroundColor: "#FFF",
+  },
+  footer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    backgroundColor: "#FFF",
+    borderTopWidth: 1,
+    borderTopColor: "#EFEFEF",
+  },
+  nextButton: {
+    backgroundColor: "#FF5A00",
+    borderRadius: 15,
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  nextButtonText: {
+    color: "#FFF",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginRight: 5,
+  },
+  recordButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFF",
+    borderWidth: 2,
+    borderColor: "#FF5A00",
+    borderRadius: 12,
+    padding: 15,
+    borderStyle: "dashed",
+  },
+  recordButtonText: {
+    color: "#FF5A00",
+    fontWeight: "bold",
+    marginLeft: 10,
+    fontSize: 16,
+  },
+});

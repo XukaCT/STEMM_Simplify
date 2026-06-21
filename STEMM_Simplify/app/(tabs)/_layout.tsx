@@ -1,35 +1,60 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+export default function RootLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        // Styling the bottom tab bar
+        // @ts-ignore
+        safeAreaInsets: { top: 0, bottom: 0 },
+        sceneContainerStyle: { backgroundColor: "#000000" },
+        tabBarStyle: {
+          backgroundColor: "#000000",
+          borderTopWidth: 0,
+          height: 60,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        },
+        tabBarActiveTintColor: "#FF5A00",
+        tabBarInactiveTintColor: "#666666",
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        position: "absolute",
+        bottom: 0,
+      }}
+    >
+      {/* Dashboard Tab */}
       <Tabs.Screen
-        name="index"
+        name="dashboard"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Dashboard",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="grid-outline" size={24} color={color} />
+          ),
         }}
       />
+
+      {/* Video Hub Tab */}
       <Tabs.Screen
-        name="explore"
+        name="video"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "STEMM Hub",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="videocam-outline" size={24} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Settings",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="settings-outline" size={24} color={color} />
+          ),
         }}
       />
     </Tabs>
   );
 }
+

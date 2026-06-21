@@ -1,17 +1,6 @@
-import { auth, db, storage } from "@/firebaseConfig";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-  addDoc,
-  arrayUnion,
-  collection,
-  doc,
-  getDoc,
-  increment,
-  updateDoc,
-} from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import {
   Check,
   Lightbulb,
@@ -156,68 +145,13 @@ export default function ParachuteResults() {
     }
   };
 
-  const uploadVideoToFirebase = async (
-    uri: string | null,
-    filename: string,
-  ) => {
-    if (!uri) return null;
-    try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      const storageRef = ref(storage, `activity1_videos/${filename}`);
-      await uploadBytesResumable(storageRef, blob);
-      return await getDownloadURL(storageRef);
-    } catch (error) {
-      console.error("Video upload failed:", error);
-      throw error;
-    }
-  };
-
   const handleSubmit = async () => {
     if (rating === 0) return;
     setIsSubmitting(true);
 
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error("No user logged in");
-
-      const timestamp = Date.now();
-      const noVideoUrl = await uploadVideoToFirebase(
-        videoNoUri,
-        `no_parachute_${timestamp}.mp4`,
-      );
-      const withVideoUrl = await uploadVideoToFirebase(
-        videoWithUri,
-        `with_parachute_${timestamp}.mp4`,
-      );
-
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-      const teamId = userDocSnap.data()?.teamId;
-
-      let fetchedTeamName = "Unknown Team";
-      let previousBest = 0;
-      let teamDocRef = null;
-
-      if (teamId) {
-        teamDocRef = doc(db, "teams", teamId);
-        const teamDocSnap = await getDoc(teamDocRef);
-
-        if (teamDocSnap.exists()) {
-          const teamData = teamDocSnap.data();
-          fetchedTeamName =
-            teamData.name ||
-            teamData.teamName ||
-            teamData.title ||
-            `Team ${teamId.substring(0, 4)}`;
-          previousBest = teamData.activity1_points || 0;
-        }
-      }
-
       const activityData = {
         activityName: "Parachute Drop",
-        teamName: fetchedTeamName,
-        teamId: teamId || "none",
         heightNo,
         timeNo,
         speedNo: parseFloat(speedNo as string),
@@ -227,28 +161,19 @@ export default function ParachuteResults() {
         timeDiffPercent: parseFloat(timeDiffPercent as string),
         rating,
         comments,
-        noVideoUrl,
-        withVideoUrl,
+        noVideoUrl: videoNoUri, // Simulated local saving
+        withVideoUrl: videoWithUri,
         locationName: locationName,
         rawCoordinates: coordinate,
         points: finalScore,
         createdAt: new Date().toISOString(),
       };
 
-      await addDoc(collection(db, "parachute_challenge"), activityData);
-
-      if (teamDocRef && finalScore > previousBest) {
-        const pointsToAdd = finalScore - previousBest;
-        await updateDoc(teamDocRef, {
-          activity1_points: finalScore,
-          totalPoints: increment(pointsToAdd),
-          completedActivities: arrayUnion(ACTIVITY_ID),
-        });
-      }
-
-      alert("Results submitted! Your team's dashboard has been updated. 🚀");
-      setIsSubmitting(false);
-      router.replace("/(tabs)/dashboard");
+      setTimeout(() => {
+        alert("Results submitted! Your team's dashboard has been updated. 🚀");
+        setIsSubmitting(false);
+        router.replace("/(tabs)/dashboard");
+      }, 500);
     } catch (e) {
       console.error("Submission error: ", e);
       alert("Failed to save results. Please try again.");

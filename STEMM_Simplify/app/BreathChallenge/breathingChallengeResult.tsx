@@ -1,15 +1,5 @@
-import { auth, db } from "@/firebaseConfig";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-  addDoc,
-  arrayUnion,
-  collection,
-  doc,
-  getDoc,
-  increment,
-  updateDoc,
-} from "firebase/firestore";
 import {
   Check,
   MapPin,
@@ -143,35 +133,9 @@ export default function BreathingPaceResult() {
     setIsSubmitting(true);
 
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error("No user logged in");
-
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-      const teamId = userDocSnap.data()?.teamId;
-
-      let fetchedTeamName = "Unknown Team";
-      let previousBest = 0;
-      let teamDocRef = null;
-
-      if (teamId) {
-        teamDocRef = doc(db, "teams", teamId);
-        const teamDocSnap = await getDoc(teamDocRef);
-        if (teamDocSnap.exists()) {
-          const teamData = teamDocSnap.data();
-          fetchedTeamName =
-            teamData.name ||
-            teamData.teamName ||
-            teamData.title ||
-            `Team ${teamId.substring(0, 4)}`;
-          previousBest = teamData.activity7_points || 0;
-        }
-      }
-
+      // Local payload construction for future use if needed
       const submissionData = {
         activityName: "Breathing Pace Trainer",
-        teamName: fetchedTeamName,
-        teamId: teamId || "none",
         rating,
         comments,
         atRestBPM: parsedAtRest,
@@ -182,27 +146,13 @@ export default function BreathingPaceResult() {
         createdAt: new Date().toISOString(),
       };
 
-      await addDoc(collection(db, "breathing_challenge"), submissionData);
-
-      if (teamDocRef) {
-        if (finalScore > previousBest) {
-          const pointsToAdd = finalScore - previousBest;
-          await updateDoc(teamDocRef, {
-            activity7_points: finalScore,
-            totalPoints: increment(pointsToAdd),
-            completedActivities: arrayUnion(ACTIVITY_ID),
-          });
-        } else {
-          await updateDoc(teamDocRef, {
-            completedActivities: arrayUnion(ACTIVITY_ID),
-          });
-        }
-      }
-
-      setIsSubmitting(false);
-      router.replace("/(tabs)/dashboard");
+      // Simulate network save
+      setTimeout(() => {
+        setIsSubmitting(false);
+        router.replace("/(tabs)/dashboard");
+      }, 500);
     } catch (e) {
-      alert("Failed to save results. Check your connection.");
+      alert("Failed to save results.");
       setIsSubmitting(false);
     }
   };

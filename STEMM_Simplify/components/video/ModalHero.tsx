@@ -4,13 +4,13 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import { Activity, Volume2, Wind, Zap } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { VideoPost } from "../videoModal";
+import { VideoPost } from "./videoModal";
 
 export default function ModalHero({ post }: { post: VideoPost }) {
   const [activeVideoTab, setActiveVideoTab] = useState<"with" | "no">("with");

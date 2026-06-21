@@ -1,15 +1,5 @@
-import { auth, db } from "@/firebaseConfig";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import {
-  addDoc,
-  collection,
-  doc,
-  getDocs,
-  query,
-  setDoc,
-  where,
-} from "firebase/firestore";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -53,40 +43,18 @@ export default function RegisterScreen() {
   const handleLetsGo = async () => {
     if (!isFormValid || isSubmitting) return;
 
-    const user = auth.currentUser;
-    if (!user) {
-      Alert.alert("Error", "You are not logged in.");
-      return;
-    }
-
     try {
       setIsSubmitting(true);
-
-      // Check if team name already exists in Firestore database
-      const teamsQuery = query(
-        collection(db, "teams"),
-        where("teamName", "==", teamName.trim()),
-      );
-      const querySnapshot = await getDocs(teamsQuery);
-
-      if (!querySnapshot.empty) {
-        Alert.alert(
-          "This team name is already registered. Please choose another one!",
-        );
-        setIsSubmitting(false);
-        return;
-      }
 
       const validMembers = members
         .filter((m) => m.name.trim() !== "")
         .map((m) => m.name.trim());
 
-      // Create the Team in Firestore (Runs only if name is unique!)
-      const teamRef = await addDoc(collection(db, "teams"), {
+      // Create a local mock payload (You can replace this with AsyncStorage later to save locally)
+      const newTeamPayload = {
         teamName: teamName.trim(),
         grade: grade,
         members: validMembers,
-        ownerUid: user.uid,
         totalPoints: 0,
         activity1_points: 0,
         activity2_points: 0,
@@ -96,18 +64,14 @@ export default function RegisterScreen() {
         activity6_points: 0,
         activity7_points: 0,
         completeActivities: [],
-        createdAt: new Date(),
-      });
+        createdAt: new Date().toISOString(),
+      };
 
-      // 3. Link Team to User
-      const userRef = doc(db, "users", user.uid);
-      await setDoc(
-        userRef,
-        { teamId: teamRef.id, isGuest: user.isAnonymous },
-        { merge: true },
-      );
-
-      router.replace("/(tabs)/dashboard");
+      // Simulate network delay
+      setTimeout(() => {
+        setIsSubmitting(false);
+        router.replace("/(tabs)/dashboard");
+      }, 500);
     } catch (error: any) {
       console.error("Failed to save team:", error);
       Alert.alert("Submission Error", error.message || "Something went wrong.");
@@ -251,6 +215,7 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+  // KEEP YOUR EXISTING STYLES HERE
   headerContainer: {
     backgroundColor: "#000",
     paddingHorizontal: 24,

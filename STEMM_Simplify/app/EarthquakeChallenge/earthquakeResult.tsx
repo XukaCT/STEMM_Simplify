@@ -1,15 +1,5 @@
-import { auth, db } from "@/firebaseConfig"; // Adjust path if needed!
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-  addDoc,
-  arrayUnion,
-  collection,
-  doc,
-  getDoc,
-  increment,
-  updateDoc,
-} from "firebase/firestore";
 import {
   Activity,
   Check,
@@ -153,36 +143,8 @@ export default function EarthquakeResult() {
     setIsSubmitting(true);
 
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error("No user logged in");
-
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-      const teamId = userDocSnap.data()?.teamId;
-
-      let fetchedTeamName = "Unknown Team";
-      let previousBest = 0;
-      let teamDocRef = null;
-
-      if (teamId) {
-        teamDocRef = doc(db, "teams", teamId);
-        const teamDocSnap = await getDoc(teamDocRef);
-
-        if (teamDocSnap.exists()) {
-          const teamData = teamDocSnap.data();
-          fetchedTeamName =
-            teamData.name ||
-            teamData.teamName ||
-            teamData.title ||
-            `Team ${teamId.substring(0, 4)}`;
-          previousBest = teamData.activity4_points || 0;
-        }
-      }
-
       const submissionData = {
         activityName: "Earthquake Structure",
-        teamName: fetchedTeamName,
-        teamId: teamId || "none",
         rating,
         comments,
         results: designs,
@@ -192,25 +154,10 @@ export default function EarthquakeResult() {
         createdAt: new Date().toISOString(),
       };
 
-      await addDoc(collection(db, "earthquake_Challenge"), submissionData);
-
-      if (teamDocRef) {
-        if (finalScore > previousBest) {
-          const pointsToAdd = finalScore - previousBest;
-          await updateDoc(teamDocRef, {
-            activity4_points: finalScore,
-            totalPoints: increment(pointsToAdd),
-            completedActivities: arrayUnion(ACTIVITY_ID),
-          });
-        } else {
-          await updateDoc(teamDocRef, {
-            completedActivities: arrayUnion(ACTIVITY_ID),
-          });
-        }
-      }
-
-      setIsSubmitting(false);
-      router.replace("/(tabs)/dashboard");
+      setTimeout(() => {
+        setIsSubmitting(false);
+        router.replace("/(tabs)/dashboard");
+      }, 500);
     } catch (e) {
       console.error("Submission error: ", e);
       alert("Failed to save results. Check your connection and console.");

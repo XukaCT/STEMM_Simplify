@@ -1,17 +1,6 @@
-import { auth, db, storage } from "@/firebaseConfig";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { router, useLocalSearchParams } from "expo-router";
-import {
-  addDoc,
-  arrayUnion,
-  collection,
-  doc,
-  getDoc,
-  increment,
-  updateDoc,
-} from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -131,86 +120,24 @@ export default function ResultScreen() {
     setIsSubmitting(true);
 
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error("No user logged in");
-
-      // 1. Upload all audio files to Firebase Storage
-      const uploadedResults = await Promise.all(
-        results.map(async (item: any) => {
-          if (!item.audioUri) return item;
-
-          const response = await fetch(item.audioUri);
-          const blob = await response.blob();
-          const storageRef = ref(
-            storage,
-            `sounds/${Date.now()}-${item.id}.m4a`,
-          );
-
-          await uploadBytes(storageRef, blob);
-          const downloadUrl = await getDownloadURL(storageRef);
-
-          return { ...item, audioUri: downloadUrl };
-        }),
-      );
-
-      // 2. FETCH TEAM ID
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-      const teamId = userDocSnap.data()?.teamId;
-
-      let fetchedTeamName = "Unknown Team";
-      let previousBest = 0;
-      let teamDocRef = null;
-
-      if (teamId) {
-        teamDocRef = doc(db, "teams", teamId);
-        const teamDocSnap = await getDoc(teamDocRef);
-
-        if (teamDocSnap.exists()) {
-          const teamData = teamDocSnap.data();
-          fetchedTeamName =
-            teamData.name ||
-            teamData.teamName ||
-            teamData.title ||
-            `Team ${teamId.substring(0, 4)}`;
-          previousBest = teamData.activity2_points || 0;
-        }
-      }
-
-      await addDoc(collection(db, "sound_challenge"), {
+      const submissionData = {
         activityName: "Sound Challenge",
-        teamName: fetchedTeamName,
-        teamId: teamId || "none",
-        results: uploadedResults,
+        results: results, // Directly keeping local audioURIs
         rating,
         comments,
         locationName: locationName,
         rawCoordinates: coordinate,
         points: finalScore,
         createdAt: new Date().toISOString(),
-      });
+      };
 
-      if (teamDocRef) {
-        if (finalScore > previousBest) {
-          const pointsToAdd = finalScore - previousBest;
-          await updateDoc(teamDocRef, {
-            activity2_points: finalScore,
-            totalPoints: increment(pointsToAdd),
-            completedActivities: arrayUnion(ACTIVITY_ID),
-          });
-        } else {
-          await updateDoc(teamDocRef, {
-            completedActivities: arrayUnion(ACTIVITY_ID),
-          });
-        }
-      }
-
-      Alert.alert("Success", "Results submitted to the team! 🚀");
-      router.replace("/(tabs)/dashboard");
+      setTimeout(() => {
+        Alert.alert("Success", "Results submitted! 🚀");
+        router.replace("/(tabs)/dashboard");
+      }, 500);
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Failed to submit results.");
-    } finally {
       setIsSubmitting(false);
     }
   };

@@ -1,15 +1,5 @@
-import { auth, db } from "@/firebaseConfig";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-  addDoc,
-  arrayUnion,
-  collection,
-  doc,
-  getDoc,
-  increment,
-  updateDoc,
-} from "firebase/firestore";
 import {
   Check,
   MapPin,
@@ -150,36 +140,8 @@ export default function HumanPerformanceResult() {
     setIsSubmitting(true);
 
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error("No user logged in");
-
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-      const teamId = userDocSnap.data()?.teamId;
-
-      let fetchedTeamName = "Unknown Team";
-      let previousBest = 0;
-      let teamDocRef = null;
-
-      if (teamId) {
-        teamDocRef = doc(db, "teams", teamId);
-        const teamDocSnap = await getDoc(teamDocRef);
-
-        if (teamDocSnap.exists()) {
-          const teamData = teamDocSnap.data();
-          fetchedTeamName =
-            teamData.name ||
-            teamData.teamName ||
-            teamData.title ||
-            `Team ${teamId.substring(0, 4)}`;
-          previousBest = teamData.activity5_points || 0;
-        }
-      }
-
       const submissionData = {
         activityName: "Human Performance Lab",
-        teamName: fetchedTeamName,
-        teamId: teamId || "none",
         rating,
         comments,
         recordedMovements: records,
@@ -190,37 +152,14 @@ export default function HumanPerformanceResult() {
         createdAt: new Date().toISOString(),
       };
 
-      await addDoc(
-        collection(db, "human_performance_challenge"),
-        submissionData,
-      );
-
-      if (teamDocRef) {
-        if (finalScore > previousBest) {
-          const pointsToAdd = finalScore - previousBest;
-          await updateDoc(teamDocRef, {
-            activity5_points: finalScore,
-            totalPoints: increment(pointsToAdd),
-            completedActivities: arrayUnion(ACTIVITY_ID),
-          });
-          alert(`New High Score! 🏆 You earned ${finalScore} points!`);
-        } else {
-          await updateDoc(teamDocRef, {
-            completedActivities: arrayUnion(ACTIVITY_ID),
-          });
-          alert(
-            `Results saved! You scored ${finalScore}, but your previous best of ${previousBest} remains your official score.`,
-          );
-        }
-      } else {
-        alert(`Results saved! You scored ${finalScore} points!`);
-      }
-
-      setIsSubmitting(false);
-      router.replace("/(tabs)/dashboard");
+      setTimeout(() => {
+        alert(`New High Score! 🏆 You earned ${finalScore} points!`);
+        setIsSubmitting(false);
+        router.replace("/(tabs)/dashboard");
+      }, 500);
     } catch (e) {
       console.error("Submission error: ", e);
-      alert("Failed to save results. Check your connection and console.");
+      alert("Failed to save results.");
       setIsSubmitting(false);
     }
   };
@@ -327,7 +266,6 @@ export default function HumanPerformanceResult() {
         </View>
 
         {/* RATING CARD (Global) */}
-        {/* RATING CARD (Fully Global!) */}
         <View style={GlobalStyles.card}>
           <Text style={GlobalStyles.ratingTitle}>Rate This Activity</Text>
           <View style={GlobalStyles.starsContainer}>
@@ -443,7 +381,6 @@ export default function HumanPerformanceResult() {
   );
 }
 
-// NOTE HOW SHORT THIS STYLESHEET IS NOW!
 const styles = StyleSheet.create({
   dataCard: {
     backgroundColor: "#fff",

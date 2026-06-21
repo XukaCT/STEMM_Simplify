@@ -1,17 +1,6 @@
-import { auth, db, storage } from "@/firebaseConfig";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-  addDoc,
-  arrayUnion,
-  collection,
-  doc,
-  getDoc,
-  increment,
-  updateDoc,
-} from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import {
   Check,
   MapPin,
@@ -131,7 +120,6 @@ export default function HandFanResult() {
     }
   };
 
-  // --- MEDIA LOGIC (Passed as props to sub-component) ---
   const handlePickVideo = async (id: string) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "videos" as any,
@@ -156,74 +144,22 @@ export default function HandFanResult() {
     );
   };
 
-  const uploadVideoToFirebase = async (
-    uri: string | null,
-    filename: string,
-  ) => {
-    if (!uri) return null;
-    try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      const storageRef = ref(storage, `handfan_videos/${filename}`);
-      await uploadBytesResumable(storageRef, blob);
-      const downloadUrl = await getDownloadURL(storageRef);
-      return downloadUrl;
-    } catch (error) {
-      console.error("Video upload failed:", error);
-      throw error;
-    }
-  };
-
   const handleSubmit = async () => {
     if (rating === 0) return;
     setIsSubmitting(true);
 
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error("No user logged in");
-
-      const timestamp = Date.now();
-      const processedResults = await Promise.all(
-        results.map(async (item) => {
-          const { videoUri, ...cleanItem } = item;
-          if (videoUri) {
-            const uploadedUrl = await uploadVideoToFirebase(
-              videoUri,
-              `handfan_${timestamp}_${item.id}.mp4`,
-            );
-            return { ...cleanItem, videoUrl: uploadedUrl };
-          }
-          return cleanItem;
-        }),
-      );
-
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-      const teamId = userDocSnap.data()?.teamId;
-
-      let fetchedTeamName = "Unknown Team";
-      let previousBest = 0;
-      let teamDocRef = null;
-
-      if (teamId) {
-        teamDocRef = doc(db, "teams", teamId);
-        const teamDocSnap = await getDoc(teamDocRef);
-
-        if (teamDocSnap.exists()) {
-          const teamData = teamDocSnap.data();
-          fetchedTeamName =
-            teamData.name ||
-            teamData.teamName ||
-            teamData.title ||
-            `Team ${teamId.substring(0, 4)}`;
-          previousBest = teamData.activity3_points || 0;
+      const processedResults = results.map((item) => {
+        const { videoUri, ...cleanItem } = item;
+        if (videoUri) {
+          // Just use the local URI instead of Firebase Storage
+          return { ...cleanItem, videoUrl: videoUri };
         }
-      }
+        return cleanItem;
+      });
 
       const activityData = {
         activityName: "Hand Fan Challenge",
-        teamName: fetchedTeamName,
-        teamId: teamId || "none",
         rating,
         comments,
         results: processedResults,
@@ -233,28 +169,13 @@ export default function HandFanResult() {
         createdAt: new Date().toISOString(),
       };
 
-      await addDoc(collection(db, "handFan_Challenges"), activityData);
-
-      if (teamDocRef) {
-        if (finalScore > previousBest) {
-          const pointsToAdd = finalScore - previousBest;
-          await updateDoc(teamDocRef, {
-            activity3_points: finalScore,
-            totalPoints: increment(pointsToAdd),
-            completedActivities: arrayUnion(ACTIVITY_ID),
-          });
-        } else {
-          await updateDoc(teamDocRef, {
-            completedActivities: arrayUnion(ACTIVITY_ID),
-          });
-        }
-      }
-
-      setIsSubmitting(false);
-      router.replace("/(tabs)/dashboard");
+      setTimeout(() => {
+        setIsSubmitting(false);
+        router.replace("/(tabs)/dashboard");
+      }, 500);
     } catch (e) {
       console.error("Submission error: ", e);
-      alert("Failed to save results. Check your connection and console.");
+      alert("Failed to save results.");
       setIsSubmitting(false);
     }
   };

@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { VideoPost } from "../videoModal";
+import { VideoPost } from "./videoModal";
 
 export default function ModalResults({ post }: { post: VideoPost }) {
   const isSoundChallenge =

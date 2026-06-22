@@ -22,7 +22,7 @@ export default function StartupScreen() {
     // Simulate a tiny delay for button feedback, then route to Register
     setTimeout(() => {
       setLoading(false);
-      router.replace("/RegisterScreen");
+      router.replace("/dashboard");
     }, 300);
   };
 

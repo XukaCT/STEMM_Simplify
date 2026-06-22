@@ -13,6 +13,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// 1. ADD THIS IMPORT!
+import { saveVideoLocally } from "../../utils/localStore";
+
 interface SoundResult {
   id: string;
   action: string;
@@ -30,20 +33,14 @@ export default function SoundPollutionHunter() {
   const [currentUri, setCurrentUri] = useState<string | null>(null);
   const [results, setResults] = useState<SoundResult[]>([]);
 
-  // Refs for tracking
   const maxDbRef = useRef(0);
   const recordingRef = useRef<Audio.Recording | null>(null);
   const soundRef = useRef<Audio.Sound | null>(null);
 
-  // Clean up audio on unmount so it doesn't run in the background
   useEffect(() => {
     return () => {
-      if (recordingRef.current) {
-        recordingRef.current.stopAndUnloadAsync();
-      }
-      if (soundRef.current) {
-        soundRef.current.unloadAsync();
-      }
+      if (recordingRef.current) recordingRef.current.stopAndUnloadAsync();
+      if (soundRef.current) soundRef.current.unloadAsync();
     };
   }, []);
 
@@ -73,12 +70,10 @@ export default function SoundPollutionHunter() {
       setDecibels(0);
       setCurrentUri(null);
 
-      // Create a completely fresh recording instance and unique file for every take!
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY,
         (status) => {
           if (status.isRecording && status.metering !== undefined) {
-            // Map the metering to match your exact previous decibel logic
             const currentDb = Math.max(0, Math.round(status.metering + 100));
             setDecibels(currentDb);
             if (currentDb > maxDbRef.current) {
@@ -86,7 +81,7 @@ export default function SoundPollutionHunter() {
             }
           }
         },
-        100, // update interval
+        100,
       );
 
       recordingRef.current = recording;
@@ -103,8 +98,6 @@ export default function SoundPollutionHunter() {
 
       if (recordingRef.current) {
         await recordingRef.current.stopAndUnloadAsync();
-
-        // expo-av automatically guarantees a unique file name every single time!
         const uri = recordingRef.current.getURI();
         setCurrentUri(uri);
         recordingRef.current = null;
@@ -114,27 +107,39 @@ export default function SoundPollutionHunter() {
     }
   };
 
-  const handleSaveResult = () => {
+  // 2. UPDATED: Save the file securely the moment they click this button!
+  const handleSaveResult = async () => {
     if (!actionText.trim() || !currentUri) return;
 
-    const newResult: SoundResult = {
-      id: Date.now().toString(),
-      action: actionText,
-      db: decibels,
-      audioUri: currentUri,
-    };
+    try {
+      const timestamp = Date.now().toString();
 
-    setResults([...results, newResult]);
+      // Pull it out of the volatile cache and into the permanent "sounds" folder instantly
+      const permanentUri = await saveVideoLocally(
+        currentUri,
+        `sound_${timestamp}.m4a`,
+        "sounds",
+      );
 
-    setActionText("");
-    setDecibels(0);
-    setCurrentUri(null);
-    maxDbRef.current = 0;
+      const newResult: SoundResult = {
+        id: timestamp,
+        action: actionText,
+        db: decibels,
+        audioUri: permanentUri, // Store the safe permanent path
+      };
+
+      setResults([...results, newResult]);
+
+      setActionText("");
+      setDecibels(0);
+      setCurrentUri(null);
+      maxDbRef.current = 0;
+    } catch (e) {
+      Alert.alert("Error", "Could not save audio file locally.");
+    }
   };
 
   const handleDeleteResult = (id: string) => {
-    // Just remove from array.
-    // The unique temp files will be safely cleared by the OS cache automatically.
     setResults(results.filter((item) => item.id !== id));
   };
 
@@ -142,7 +147,6 @@ export default function SoundPollutionHunter() {
     if (!uri) return;
 
     try {
-      // Safely toggle the audio mode to playback
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
@@ -153,7 +157,6 @@ export default function SoundPollutionHunter() {
         await soundRef.current.unloadAsync();
       }
 
-      // Create a fresh player for the specific file
       const { sound } = await Audio.Sound.createAsync({ uri });
       soundRef.current = sound;
       await sound.playAsync();
@@ -171,7 +174,8 @@ export default function SoundPollutionHunter() {
     router.push({
       pathname: "/SoundPollutionHunter/soundResult",
       params: {
-        results: JSON.stringify(results),
+        // 3. SECURE ROUTING: encodeURIComponent prevents Expo from breaking file:// paths!
+        results: encodeURIComponent(JSON.stringify(results)),
         startTime: startTime as string,
       },
     });
@@ -179,6 +183,7 @@ export default function SoundPollutionHunter() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* Everything inside your UI stays exactly the same! */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}

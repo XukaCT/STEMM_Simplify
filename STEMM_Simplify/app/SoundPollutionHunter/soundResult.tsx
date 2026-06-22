@@ -16,17 +16,28 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import SoundRecordingList from "../../components/sound/SoundRecordingList";
 import UniversalMap from "../../components/universalMap";
 import { GlobalStyles } from "../../constants/GlobalStyles";
+import { saveActivityToFeed } from "../../utils/localStore";
+
+// 1. ADD THIS IMPORT FOR PLAYBACK FIX
+import { Audio } from "expo-av";
 
 const ACTIVITY_ID = "2";
 
 export default function ResultScreen() {
   const params = useLocalSearchParams();
 
-  const rawResults =
-    typeof params.results === "string"
-      ? JSON.parse(params.results)
-      : params.results;
-  const results = rawResults || [];
+  // 2. SAFELY DECODE URL PARAMS
+  let parsedRaw = [];
+  if (typeof params.results === "string") {
+    try {
+      parsedRaw = JSON.parse(decodeURIComponent(params.results));
+    } catch (e) {
+      parsedRaw = JSON.parse(params.results); // fallback
+    }
+  } else {
+    parsedRaw = params.results || [];
+  }
+  const results = parsedRaw;
 
   const startTimeString = params.startTime as string;
   const startTime = startTimeString ? parseInt(startTimeString) : Date.now();
@@ -52,6 +63,17 @@ export default function ResultScreen() {
     latitude: number;
     longitude: number;
   } | null>(null);
+
+  // 3. GUARANTEE AUDIO PLAYS ON THIS SCREEN
+  useEffect(() => {
+    (async () => {
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: true,
+      });
+    })();
+  }, []);
 
   const fetchAddressFromCoords = async (lat: number, lng: number) => {
     try {
@@ -116,25 +138,36 @@ export default function ResultScreen() {
   };
 
   const handleSubmit = async () => {
-    if (rating === 0) return;
+    if (rating === 0 || isSubmitting) return;
     setIsSubmitting(true);
 
     try {
+      // 4. NO PROMISE.ALL NEEDED! The files were saved safely in activity1.tsx
       const submissionData = {
+        collectionName: "sound_challenge",
         activityName: "Sound Challenge",
-        results: results, // Directly keeping local audioURIs
+        activityType: "generic",
+        title: "Audio Log Complete!",
+        teamName: teamName,
+        locationName: locationName || "Local",
         rating,
         comments,
-        locationName: locationName,
-        rawCoordinates: coordinate,
+
+        // Push the first valid audio link to videoUrl so the Hub Card can play it
+        videoUrl: results.length > 0 ? results.audioUri : null,
+        soundReadings: results,
+
         points: finalScore,
         createdAt: new Date().toISOString(),
+        heroLabel: "NOISE",
+        heroStat: `${results.length} LOGS`,
       };
 
-      setTimeout(() => {
-        Alert.alert("Success", "Results submitted! 🚀");
-        router.replace("/(tabs)/dashboard");
-      }, 500);
+      await saveActivityToFeed(submissionData);
+
+      Alert.alert("Success", "Results submitted offline! 🚀");
+      setIsSubmitting(false);
+      router.replace("/(tabs)/dashboard");
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Failed to submit results.");
@@ -148,7 +181,6 @@ export default function ResultScreen() {
         contentContainerStyle={GlobalStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header (Global) */}
         <View style={GlobalStyles.headerContainer}>
           <View style={GlobalStyles.successCircle}>
             <Ionicons name="checkmark" size={32} color="#fff" />
@@ -159,7 +191,6 @@ export default function ResultScreen() {
           </Text>
         </View>
 
-        {/* Recorded Clips Section (Refactored) */}
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
             <Ionicons name="cloud-upload-outline" size={20} color="#FF5A00" />
@@ -168,7 +199,6 @@ export default function ResultScreen() {
           <SoundRecordingList results={results} />
         </View>
 
-        {/* Rating Section (Global) */}
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
             <Ionicons name="star-outline" size={20} color="#FF5A00" />
@@ -187,7 +217,6 @@ export default function ResultScreen() {
           </View>
         </View>
 
-        {/* Comments Section (Global) */}
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
             <Ionicons name="chatbubble-outline" size={20} color="#FF5A00" />
@@ -208,7 +237,6 @@ export default function ResultScreen() {
           />
         </View>
 
-        {/* INTERACTIVE LOCATION CARD (Global) */}
         <TouchableOpacity
           style={[GlobalStyles.card, GlobalStyles.interactiveLocationCard]}
           onPress={openMap}
@@ -229,7 +257,6 @@ export default function ResultScreen() {
           </View>
         </TouchableOpacity>
 
-        {/* Submit Button (Global) */}
         <TouchableOpacity
           style={[
             GlobalStyles.submitButton,
@@ -251,7 +278,6 @@ export default function ResultScreen() {
         )}
       </ScrollView>
 
-      {/* --- FULL SCREEN MAP MODAL (Global) --- */}
       <Modal
         visible={isMapVisible}
         animationType="slide"
@@ -294,5 +320,3 @@ export default function ResultScreen() {
     </SafeAreaView>
   );
 }
-
-// Entire file utilizes GlobalStyles - zero local styles needed!

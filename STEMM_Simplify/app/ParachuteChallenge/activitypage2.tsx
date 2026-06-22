@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import * as MediaLibrary from "expo-media-library";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -17,49 +16,43 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function ParachuteAdjustment() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { startTime } = params;
 
-  const { heightNo, timeNo } = params;
+  // 1. UNPACK EVERYTHING FROM PAGE 1
+  // We grab the height, time, start time, AND the video recorded on the previous screen!
+  const { startTime, heightNo, timeNo, videoNoUri } = params;
 
-  // State for user inputs
+  // State for user inputs on THIS page
   const [dropHeight, setDropHeight] = useState("");
   const [fallTime, setFallTime] = useState("");
   const [videoUri, setVideoUri] = useState<string | null>(null);
 
   const recordVideo = async () => {
     const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
-    const libraryPermission = await MediaLibrary.requestPermissionsAsync();
 
-    if (
-      cameraPermission.status !== "granted" ||
-      libraryPermission.status !== "granted"
-    ) {
+    if (cameraPermission.status !== "granted") {
       Alert.alert(
         "Permission Needed",
-        "We need camera and gallery access to save your experiment!",
+        "We need camera access to record your experiment!",
       );
       return;
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: "videos" as any,
-      allowsEditing: true,
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      allowsEditing: false, // MUST BE FALSE for Android 13+
       quality: 1,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const localUri = result.assets[0].uri;
       setVideoUri(localUri);
-      try {
-        // 4. Save to Gallery
-        await MediaLibrary.saveToLibraryAsync(localUri);
-        Alert.alert("Success", "Video saved to your gallery!");
-      } catch (error) {
-        console.error("Save Error:", error);
-        Alert.alert("Error", "Could not save video to gallery.");
-      }
+      Alert.alert(
+        "Success",
+        "Video recorded! It will be saved when you submit your results.",
+      );
     }
   };
+
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: "black" }}
@@ -89,7 +82,6 @@ export default function ParachuteAdjustment() {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* Instruction Alert Box (Green Theme) */}
         <View style={styles.alertBox}>
           <Text style={styles.alertText}>
             🪂 Attach your parachute to the toy. Drop it from the{" "}
@@ -98,11 +90,9 @@ export default function ParachuteAdjustment() {
           </Text>
         </View>
 
-        {/* Measurement Input Card */}
         <View style={styles.whiteCard}>
           <Text style={styles.sectionTitle}>Enter Your Measurements</Text>
 
-          {/* Drop Height Input */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>
               Drop Height <Text style={styles.unitText}>(metres)</Text>
@@ -118,7 +108,6 @@ export default function ParachuteAdjustment() {
             />
           </View>
 
-          {/* Fall Time Input */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>
               Fall Time <Text style={styles.unitText}>(seconds)</Text>
@@ -134,6 +123,7 @@ export default function ParachuteAdjustment() {
             />
           </View>
         </View>
+
         <TouchableOpacity
           style={styles.recordButton}
           onPress={recordVideo}
@@ -152,7 +142,6 @@ export default function ParachuteAdjustment() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Results Button Footer (Mint Green) */}
       <View style={styles.footer}>
         <TouchableOpacity
           style={styles.resultsButton}
@@ -165,14 +154,18 @@ export default function ParachuteAdjustment() {
               );
               return;
             }
+
+            // 2. PACK EVERYTHING FOR THE RESULTS PAGE
             router.push({
               pathname: "./result",
               params: {
-                heightNo: heightNo, // From Page 1
-                timeNo: timeNo, // From Page 1
-                heightWith: dropHeight, // From Page 2
-                timeWith: fallTime, // From Page 2
+                heightNo: heightNo,
+                timeNo: timeNo,
+                heightWith: dropHeight,
+                timeWith: fallTime,
                 startTime: startTime,
+                videoNoUri: videoNoUri, // From Page 1
+                videoWithUri: videoUri, // From THIS Page (Page 2)
               },
             });
           }}
@@ -192,48 +185,14 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingTop: 10,
   },
-  backButton: {
-    marginBottom: 20,
-  },
+  backButton: { marginBottom: 20 },
   headerTitleRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 20,
   },
-  stepCircle: {
-    backgroundColor: "#00C853", // Green from screenshot
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 15,
-  },
-  stepNumber: {
-    color: "#FFF",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  headerTitle: {
-    color: "#FFF",
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-  headerSubtitle: {
-    color: "#999",
-    fontSize: 14,
-    marginTop: 4,
-  },
-  progressBarContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-  progressSegment: {
-    flex: 1,
-    height: 4,
-    borderRadius: 2,
-  },
+  headerTitle: { color: "#FFF", fontSize: 22, fontWeight: "bold" },
+  headerSubtitle: { color: "#999", fontSize: 14, marginTop: 4 },
   scrollContent: {
     padding: 20,
     paddingBottom: 100,
@@ -241,18 +200,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   alertBox: {
-    backgroundColor: "#E8F5E9", // Light green
+    backgroundColor: "#E8F5E9",
     borderWidth: 1,
     borderColor: "#C8E6C9",
     borderRadius: 12,
     padding: 15,
     marginBottom: 20,
   },
-  alertText: {
-    color: "#2E7D32", // Dark green
-    fontSize: 14,
-    lineHeight: 20,
-  },
+  alertText: { color: "#2E7D32", fontSize: 14, lineHeight: 20 },
   whiteCard: {
     backgroundColor: "#FFF",
     borderRadius: 16,
@@ -267,17 +222,9 @@ const styles = StyleSheet.create({
     color: "#000",
     marginBottom: 20,
   },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 8,
-  },
-  unitText: {
-    color: "#999",
-  },
+  inputGroup: { marginBottom: 20 },
+  inputLabel: { fontSize: 14, color: "#666", marginBottom: 8 },
+  unitText: { color: "#999" },
   textInput: {
     borderWidth: 1,
     borderColor: "#E5E5E5",
@@ -296,13 +243,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   resultsButton: {
-    backgroundColor: "#00C853", // Mint green from screenshot
+    backgroundColor: "#00C853",
     borderRadius: 15,
     height: 56,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    // Adding a slight shadow for depth
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

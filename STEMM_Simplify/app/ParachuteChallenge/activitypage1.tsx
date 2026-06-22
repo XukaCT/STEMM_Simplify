@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import * as MediaLibrary from "expo-media-library";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -26,35 +25,28 @@ export default function BaselineDrop() {
 
   const recordVideo = async () => {
     const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
-    const libraryPermission = await MediaLibrary.requestPermissionsAsync();
 
-    if (
-      cameraPermission.status !== "granted" ||
-      libraryPermission.status !== "granted"
-    ) {
+    if (cameraPermission.status !== "granted") {
       Alert.alert(
         "Permission Needed",
-        "We need camera and gallery access to save your experiment!",
+        "We need camera access to record your experiment!",
       );
       return;
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: "videos" as any,
-      allowsEditing: true,
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      allowsEditing: false, // MUST BE FALSE for Android 13+ Video Support
       quality: 1,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const localUri = result.assets[0].uri;
       setVideoUri(localUri);
-      try {
-        await MediaLibrary.saveToLibraryAsync(localUri);
-        Alert.alert("Success", "Video saved to your gallery!");
-      } catch (error) {
-        console.error("Save Error:", error);
-        Alert.alert("Error", "Could not save video to gallery.");
-      }
+      Alert.alert(
+        "Success",
+        "Video recorded! It will be saved when you submit your results.",
+      );
     }
   };
 
@@ -67,13 +59,13 @@ export default function BaselineDrop() {
       return;
     }
 
-    // Pack the data into the router backpack and send it to page 2!
     router.push({
       pathname: "./activitypage2",
       params: {
         heightNo: dropHeight,
         timeNo: fallTime,
         startTime: startTime,
+        videoNoUri: videoUri,
       },
     });
   };
@@ -107,7 +99,6 @@ export default function BaselineDrop() {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* Instruction Alert Box (Orange Theme for Page 1) */}
         <View style={styles.alertBox}>
           <Text style={styles.alertText}>
             Drop the toy <Text style={{ fontWeight: "bold" }}>without</Text> the
@@ -116,7 +107,6 @@ export default function BaselineDrop() {
           </Text>
         </View>
 
-        {/* Measurement Input Card */}
         <View style={styles.whiteCard}>
           <Text style={styles.sectionTitle}>Enter Baseline Measurements</Text>
 
@@ -169,7 +159,6 @@ export default function BaselineDrop() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Footer Next Button */}
       <View style={styles.footer}>
         <TouchableOpacity
           style={styles.nextButton}

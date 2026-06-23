@@ -17,10 +17,8 @@ const FILTERS = [
   "All Teams",
   "Parachute Drop",
   "Reaction Board",
-  "Breathing Pace",
   "Human Performance",
   "Hand Fan",
-  "Earthquake",
   "Sound",
 ];
 
@@ -36,10 +34,8 @@ export default function VideoHubScreen() {
           const filterMap: { [key: string]: string } = {
             "Parachute Drop": "parachute",
             "Reaction Board": "reaction",
-            "Breathing Pace": "breathing",
             "Human Performance": "human_performance",
             "Hand Fan": "handfan",
-            Earthquake: "earthquake",
             Sound: "sound",
           };
           const searchKeyword = filterMap[activeFilter] || activeFilter;
@@ -108,19 +104,10 @@ export default function VideoHubScreen() {
         )}
       </View>
 
+      {/* THE FIX: We don't need to rebuild the object with `rawData` anymore! 
+          The new useMegaFeed hook puts everything directly on the selectedPost. */}
       <VideoModal
-        selectedPost={
-          selectedPost?.rawData
-            ? {
-                ...selectedPost.rawData,
-                activityName: selectedPost.activityName,
-                title: selectedPost.title,
-                teamName: selectedPost.teamName,
-                location: selectedPost.location,
-                rank: selectedPost.rank,
-              }
-            : null
-        }
+        selectedPost={selectedPost ? (selectedPost as any) : null}
         onClose={() => setSelectedPost(null)}
       />
     </SafeAreaView>

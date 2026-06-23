@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Audio } from "expo-av";
 import * as Location from "expo-location";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -18,21 +19,17 @@ import UniversalMap from "../../components/universalMap";
 import { GlobalStyles } from "../../constants/GlobalStyles";
 import { saveActivityToFeed } from "../../utils/localStore";
 
-// 1. ADD THIS IMPORT FOR PLAYBACK FIX
-import { Audio } from "expo-av";
-
 const ACTIVITY_ID = "2";
 
 export default function ResultScreen() {
   const params = useLocalSearchParams();
 
-  // 2. SAFELY DECODE URL PARAMS
   let parsedRaw = [];
   if (typeof params.results === "string") {
     try {
       parsedRaw = JSON.parse(decodeURIComponent(params.results));
     } catch (e) {
-      parsedRaw = JSON.parse(params.results); // fallback
+      parsedRaw = JSON.parse(params.results);
     }
   } else {
     parsedRaw = params.results || [];
@@ -64,7 +61,6 @@ export default function ResultScreen() {
     longitude: number;
   } | null>(null);
 
-  // 3. GUARANTEE AUDIO PLAYS ON THIS SCREEN
   useEffect(() => {
     (async () => {
       await Audio.setAudioModeAsync({
@@ -142,20 +138,21 @@ export default function ResultScreen() {
     setIsSubmitting(true);
 
     try {
-      // 4. NO PROMISE.ALL NEEDED! The files were saved safely in activity1.tsx
       const submissionData = {
         collectionName: "sound_challenge",
         activityName: "Sound Challenge",
-        activityType: "generic",
+        activityType: "generic", // Leaves FeedCard generic, but opens Modal with media player
         title: "Audio Log Complete!",
         teamName: teamName,
         locationName: locationName || "Local",
         rating,
         comments,
 
-        // Push the first valid audio link to videoUrl so the Hub Card can play it
+        // FIX 1: Point directly to the first index of the array!
         videoUrl: results.length > 0 ? results.audioUri : null,
-        soundReadings: results,
+
+        // FIX 2: Standardize the key name so ModalHero.tsx can find it!
+        results: results,
 
         points: finalScore,
         createdAt: new Date().toISOString(),

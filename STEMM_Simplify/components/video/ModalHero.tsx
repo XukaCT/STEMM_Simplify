@@ -174,22 +174,6 @@ export default function ModalHero({ post }: { post: VideoPost }) {
                 No media attached to this trial
               </Text>
             </View>
-          ) : isSoundChallenge ? (
-            <TouchableOpacity
-              style={styles.noMediaOverlay}
-              activeOpacity={0.9}
-              onPress={() => (isPlaying ? player.pause() : player.play())}
-            >
-              <FontAwesome5
-                name={isPlaying ? "pause-circle" : "play-circle"}
-                size={64}
-                color="#8B5CF6"
-              />
-              <Text style={styles.noMediaOverlayText}>Audio Track</Text>
-              <Text style={{ color: "#fff", fontSize: 12, marginTop: 8 }}>
-                Tap anywhere to {isPlaying ? "Pause" : "Play"}
-              </Text>
-            </TouchableOpacity>
           ) : null}
         </View>
 

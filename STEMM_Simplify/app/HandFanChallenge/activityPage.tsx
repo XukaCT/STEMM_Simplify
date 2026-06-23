@@ -1,18 +1,23 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Slider from "@react-native-community/slider";
+import { Video as ExpoVideo, ResizeMode } from "expo-av";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ArrowLeft,
   CheckCircle2,
   Paperclip,
+  Play,
   Save,
   Trash2,
-  Video,
+  Video as VideoIcon,
   Wind,
+  X,
 } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Alert,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -21,8 +26,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-// IMPORT OFFLINE STORAGE
 import { saveVideoLocally } from "../../utils/localStore";
 
 export default function ActivityPage() {
@@ -34,8 +37,11 @@ export default function ActivityPage() {
   const params = useLocalSearchParams();
   const { startTime } = params;
 
-  // Temporarily hold the recorded video before saving the result row
   const [tempVideoUri, setTempVideoUri] = useState<string | null>(null);
+
+  // Rewatch Player State
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+  const [currentPlayUri, setCurrentPlayUri] = useState<string | null>(null);
 
   const [results, setResults] = useState<
     {
@@ -48,31 +54,37 @@ export default function ActivityPage() {
     }[]
   >([]);
 
+  const openVideo = (uri: string) => {
+    setCurrentPlayUri(uri);
+    setIsPlayingVideo(true);
+  };
+
+  const closeVideo = () => {
+    setIsPlayingVideo(false);
+    setCurrentPlayUri(null);
+  };
+
   const handleRecordAndSave = async () => {
     const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
 
     if (cameraStatus.status !== "granted") {
-      Alert.alert(
-        "Permission Needed",
-        "Camera permission is required to record videos.",
-      );
+      Alert.alert("Permission Needed", "Camera is required.");
       return;
     }
 
     try {
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ["videos"],
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
         allowsEditing: false,
         quality: 1,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const uri = result.assets[0].uri;
-        // Queue the video!
         setTempVideoUri(uri);
         Alert.alert(
           "Success",
-          "Video recorded! Fill in the form and click 'Save Result' to attach it to this test.",
+          "Video recorded! Click 'Save Result' to attach it to this test.",
         );
       }
     } catch (error) {
@@ -82,9 +94,15 @@ export default function ActivityPage() {
   };
 
   const handleSaveResult = async () => {
-    if (!fanDesign || !bendAngle) return;
+    if (!fanDesign || !bendAngle) {
+      Alert.alert(
+        "Missing Details",
+        "Please enter a fan design name and bend angle before saving.",
+      );
+      return;
+    }
 
-    // If a video was queued, save it permanently to the local folder immediately
+    // Save video locally ONE AT A TIME to prevent lagging!
     let permanentUri = null;
     if (tempVideoUri) {
       permanentUri = await saveVideoLocally(
@@ -106,22 +124,54 @@ export default function ActivityPage() {
     setResults([newResult, ...results]);
     setFanDesign("");
     setBendAngle("");
-    setTempVideoUri(null); // Clear the queue for the next test
+    setTempVideoUri(null);
   };
 
-  // NEW: Delete a specific result from the list
   const handleDeleteResult = (id: string) => {
     setResults(results.filter((item) => item.id !== id));
   };
 
-  const handleComplete = () => {
-    router.push({
-      pathname: "/HandFanChallenge/handFanResult",
-      params: {
-        results: encodeURIComponent(JSON.stringify(results)),
-        startTime: startTime as string,
-      },
-    });
+  const handleComplete = async () => {
+    if (tempVideoUri) {
+      Alert.alert(
+        "Unsaved Video",
+        "You recorded a video but haven't saved it. Click 'Save Result' to attach it before completing.",
+      );
+      return;
+    }
+
+    if (results.length === 0) {
+      Alert.alert(
+        "Missing Data",
+        "Please test a fan design and click 'Save Result' before continuing.",
+      );
+      return;
+    }
+
+    const hasAtLeastOneVideo = results.some((item) => item.videoUri);
+    if (!hasAtLeastOneVideo) {
+      Alert.alert(
+        "Missing Video",
+        "Please record at least one video showing your fan design in action!",
+      );
+      return;
+    }
+
+    try {
+      // Pass data safely via AsyncStorage
+      await AsyncStorage.setItem("@temp_handfan_data", JSON.stringify(results));
+
+      // USE REPLACE: Prevents the user from ever hitting the back button to return here!
+      router.replace({
+        pathname: "/HandFanChallenge/handFanResult",
+        params: {
+          startTime: (startTime as string) || Date.now().toString(),
+        },
+      });
+    } catch (e) {
+      console.error("Routing error:", e);
+      Alert.alert("Error", "Could not navigate to the results page.");
+    }
   };
 
   return (
@@ -182,11 +232,14 @@ export default function ActivityPage() {
 
         <View style={styles.instructionCard}>
           <Text style={styles.instructionTitle}>
-            Phase 1: Paper Fan Designs
+            {activePhase === 1
+              ? "Phase 1: Paper Fan Designs"
+              : "Phase 2: Material Upgrades"}
           </Text>
           <Text style={styles.instructionBody}>
-            Try different fan fold patterns using paper and measure the bend
-            angle.
+            {activePhase === 1
+              ? "Try different fan fold patterns using paper and measure the bend angle."
+              : "Modify your design using stiffer materials to see how structural integrity affects air pressure."}
           </Text>
         </View>
 
@@ -196,7 +249,9 @@ export default function ActivityPage() {
             style={styles.input}
             value={fanDesign}
             onChangeText={setFanDesign}
-            placeholder="e.g. Accordion Fold"
+            placeholder={
+              activePhase === 1 ? "e.g. Accordion Fold" : "e.g. Cardboard Base"
+            }
           />
 
           <Text style={styles.label}>Distance: {distance}cm</Text>
@@ -236,7 +291,7 @@ export default function ActivityPage() {
             ]}
             onPress={handleRecordAndSave}
           >
-            <Video size={20} color={tempVideoUri ? "#10B981" : "#ccc"} />
+            <VideoIcon size={20} color={tempVideoUri ? "#10B981" : "#ccc"} />
             <Text
               style={[
                 styles.recordButtonText,
@@ -260,7 +315,6 @@ export default function ActivityPage() {
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Results</Text>
-
           {results.length === 0 ? (
             <Text style={styles.emptyText}>
               No results saved yet. Run a test and click Save!
@@ -279,19 +333,21 @@ export default function ActivityPage() {
                 <View style={styles.resultRightContent}>
                   <View style={styles.resultScoreContainer}>
                     <Text style={styles.resultAngle}>{item.angle}</Text>
-                    {item.videoUri && (
-                      <Video
-                        size={16}
-                        color="#10B981"
-                        style={{ marginTop: 4 }}
-                      />
-                    )}
                   </View>
 
-                  {/* Delete Button */}
+                  {/* REWATCH BUTTON */}
+                  {item.videoUri && (
+                    <TouchableOpacity
+                      onPress={() => openVideo(item.videoUri!)}
+                      style={styles.iconButton}
+                    >
+                      <Play size={20} color="#0284C7" fill="#0284C7" />
+                    </TouchableOpacity>
+                  )}
+
                   <TouchableOpacity
                     onPress={() => handleDeleteResult(item.id)}
-                    style={styles.deleteButton}
+                    style={styles.iconButton}
                   >
                     <Trash2 size={20} color="#EF4444" />
                   </TouchableOpacity>
@@ -299,29 +355,6 @@ export default function ActivityPage() {
               </View>
             ))
           )}
-        </View>
-
-        <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>Understanding Air Movement</Text>
-          <Text style={styles.infoBody}>
-            Air movement creates pressure differences that can move or bend
-            objects. Fans work by pushing air particles forward, creating wind.
-            The strength of the air movement depends on fan design, distance,
-            and surface area.
-          </Text>
-          <Text style={styles.infoSubTitle}>Key Factors:</Text>
-          <Text style={styles.infoBullet}>
-            • Larger fan surface = more air pushed
-          </Text>
-          <Text style={styles.infoBullet}>
-            • Accordion folds create turbulent airflow
-          </Text>
-          <Text style={styles.infoBullet}>
-            • Closer distance = stronger air pressure
-          </Text>
-          <Text style={styles.infoBullet}>
-            • Stiffer paper bends less than flexible paper
-          </Text>
         </View>
       </ScrollView>
 
@@ -334,6 +367,34 @@ export default function ActivityPage() {
           <Text style={styles.completeButtonText}>Complete Activity</Text>
         </TouchableOpacity>
       </View>
+
+      {/* REWATCH MODAL */}
+      <Modal
+        visible={isPlayingVideo}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeVideo}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.videoPlayerContainer}>
+            <TouchableOpacity
+              style={styles.closeVideoButton}
+              onPress={closeVideo}
+            >
+              <X size={28} color="#fff" />
+            </TouchableOpacity>
+            {currentPlayUri && (
+              <ExpoVideo
+                source={{ uri: currentPlayUri }}
+                style={styles.fullVideo}
+                useNativeControls
+                resizeMode={ResizeMode.CONTAIN}
+                shouldPlay
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -453,20 +514,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 10,
   },
-  resultDetails: {
-    flex: 1,
-  },
-  resultRightContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  resultScoreContainer: {
-    alignItems: "flex-end",
-  },
-  deleteButton: {
-    padding: 6,
-  },
+  resultDetails: { flex: 1 },
+  resultRightContent: { flexDirection: "row", alignItems: "center", gap: 8 },
+  resultScoreContainer: { alignItems: "flex-end", marginRight: 8 },
+  iconButton: { padding: 8, backgroundColor: "#E5E7EB", borderRadius: 8 },
   resultDesign: {
     fontWeight: "700",
     fontSize: 16,
@@ -475,32 +526,6 @@ const styles = StyleSheet.create({
   },
   resultMeta: { fontSize: 12, color: "#888", marginTop: 2 },
   resultAngle: { fontSize: 22, fontWeight: "bold", color: "#FF6B00" },
-  infoBox: {
-    backgroundColor: "#F0F7FF",
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#DDF0FF",
-  },
-  infoTitle: {
-    color: "#1E40AF",
-    fontWeight: "700",
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  infoBody: {
-    color: "#1E40AF",
-    fontSize: 13,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  infoSubTitle: {
-    color: "#1E40AF",
-    fontWeight: "700",
-    fontSize: 13,
-    marginBottom: 6,
-  },
-  infoBullet: { color: "#1E40AF", fontSize: 13, lineHeight: 20, marginLeft: 8 },
   bottomNav: {
     position: "absolute",
     bottom: 0,
@@ -522,4 +547,26 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   completeButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+
+  // Rewatch Modal Styles
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  videoPlayerContainer: {
+    width: "100%",
+    height: 500,
+    backgroundColor: "#000",
+    position: "relative",
+  },
+  closeVideoButton: {
+    position: "absolute",
+    top: -50,
+    right: 20,
+    zIndex: 10,
+    padding: 8,
+  },
+  fullVideo: { width: "100%", height: "100%" },
 });

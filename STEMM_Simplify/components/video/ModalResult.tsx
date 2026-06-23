@@ -2,7 +2,13 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { VideoPost } from "./videoModal";
 
-export default function ModalResults({ post }: { post: VideoPost }) {
+export default function ModalResults({
+  post,
+  onDelete,
+}: {
+  post: VideoPost;
+  onDelete: (id: string) => void;
+}) {
   const isSoundChallenge =
     post.activityName?.includes("Sound") ||
     post.collectionName === "sound_challenge";

@@ -25,7 +25,7 @@ const FILTERS = [
 export default function VideoHubScreen() {
   const [activeFilter, setActiveFilter] = useState("All Teams");
   const [selectedPost, setSelectedPost] = useState<FeedItem | null>(null);
-  const { feedItems, loading } = useMegaFeed();
+  const { feedItems, loading, deleteActivity } = useMegaFeed();
 
   const filteredItems =
     activeFilter === "All Teams"
@@ -107,8 +107,12 @@ export default function VideoHubScreen() {
       {/* THE FIX: We don't need to rebuild the object with `rawData` anymore! 
           The new useMegaFeed hook puts everything directly on the selectedPost. */}
       <VideoModal
-        selectedPost={selectedPost ? (selectedPost as any) : null}
+        selectedPost={selectedPost}
         onClose={() => setSelectedPost(null)}
+        onDelete={async (id) => {
+          await deleteActivity(id);
+          setSelectedPost(null);
+        }}
       />
     </SafeAreaView>
   );

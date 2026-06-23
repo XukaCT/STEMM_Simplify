@@ -1,6 +1,15 @@
 import { FontAwesome5 } from "@expo/vector-icons";
+import { Trash2 } from "lucide-react-native";
 import React from "react";
-import { Modal, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import ModalHero from "./ModalHero";
 import ModalResults from "./ModalResult";
 
@@ -32,9 +41,14 @@ export interface VideoPost {
 interface VideoModalProps {
   selectedPost: VideoPost | null;
   onClose: () => void;
+  onDelete: (id: string) => void;
 }
 
-export default function VideoModal({ selectedPost, onClose }: VideoModalProps) {
+export default function VideoModal({
+  selectedPost,
+  onClose,
+  onDelete,
+}: VideoModalProps) {
   if (!selectedPost) return null;
 
   return (
@@ -45,10 +59,8 @@ export default function VideoModal({ selectedPost, onClose }: VideoModalProps) {
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
-        {/* Extracted Hero & Media Player Component */}
-        <ModalHero post={selectedPost} />
+        <ModalHero post={selectedPost} onClose={onClose} />
 
-        {/* Scrollable Modal Content */}
         <ScrollView
           style={styles.modalContent}
           showsVerticalScrollIndicator={false}
@@ -75,7 +87,6 @@ export default function VideoModal({ selectedPost, onClose }: VideoModalProps) {
             </View>
           </View>
 
-          {/* Sleek Stats Row */}
           <View style={styles.sleekStatsRow}>
             <View style={[styles.sleekStatBox, { backgroundColor: "#000" }]}>
               <FontAwesome5 name="trophy" size={16} color="#FF5A00" />
@@ -119,7 +130,6 @@ export default function VideoModal({ selectedPost, onClose }: VideoModalProps) {
             </View>
           </View>
 
-          {/* Extracted Dynamic Results Tables */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>RESULTS</Text>
             <ModalResults post={selectedPost} />
@@ -133,6 +143,30 @@ export default function VideoModal({ selectedPost, onClose }: VideoModalProps) {
               </View>
             </View>
           ) : null}
+
+          {/* THE NEW PLACEMENT FOR THE DELETE BUTTON */}
+          <TouchableOpacity
+            style={styles.deleteActivityButton}
+            onPress={() => {
+              Alert.alert(
+                "Delete Activity",
+                "Are you sure you want to delete this entire activity log? This cannot be undone.",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: () => onDelete(selectedPost.id!),
+                  },
+                ],
+              );
+            }}
+          >
+            <Trash2 size={18} color="#EF4444" />
+            <Text style={styles.deleteActivityText}>
+              Delete Entire Activity
+            </Text>
+          </TouchableOpacity>
 
           <View style={{ height: 40 }} />
         </ScrollView>
@@ -202,4 +236,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   notesText: { fontSize: 15, color: "#374151", lineHeight: 24 },
+  deleteActivityButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+    backgroundColor: "#FEE2E2",
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 10,
+  },
+  deleteActivityText: { color: "#EF4444", fontWeight: "bold", fontSize: 15 },
 });

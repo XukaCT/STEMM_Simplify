@@ -1,7 +1,7 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useEvent } from "expo";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { Activity, Volume2, Wind, Zap } from "lucide-react-native";
+import { Activity, Volume2, Wind, X, Zap } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ScrollView,
@@ -12,7 +12,13 @@ import {
 } from "react-native";
 import { VideoPost } from "./videoModal";
 
-export default function ModalHero({ post }: { post: VideoPost }) {
+export default function ModalHero({
+  post,
+  onClose,
+}: {
+  post: VideoPost;
+  onClose: () => void;
+}) {
   const [activeVideoTab, setActiveVideoTab] = useState<"with" | "no">("with");
   const [activeTrialIndex, setActiveTrialIndex] = useState(0);
 
@@ -152,9 +158,12 @@ export default function ModalHero({ post }: { post: VideoPost }) {
   if (isMediaPost) {
     return (
       <View style={styles.videoHeaderContainer}>
-        <View style={styles.dragHandleContainer}>
-          <View style={styles.dragHandle} />
-        </View>
+        {/* ENLARGED DRAG HANDLE & CLOSE BUTTON */}
+
+        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <X size={20} color="#fff" />
+        </TouchableOpacity>
+
         <View style={styles.videoPlayerWrapper}>
           <VideoView
             style={styles.videoPlayer}
@@ -275,9 +284,11 @@ export default function ModalHero({ post }: { post: VideoPost }) {
 
   return (
     <View style={[styles.dataHeroContainer, { backgroundColor: hero.bg }]}>
-      <View style={styles.dragHandleContainer}>
-        <View style={styles.dragHandle} />
-      </View>
+      {/* ENLARGED DRAG HANDLE & CLOSE BUTTON */}
+      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+        <X size={20} color="#fff" />
+      </TouchableOpacity>
+
       <View style={styles.heroContentCenter}>
         {hero.icon}
         <Text style={styles.heroBannerLabel}>{hero.label}</Text>
@@ -368,15 +379,25 @@ const styles = StyleSheet.create({
   },
   dragHandleContainer: {
     position: "absolute",
-    top: 12,
+    top: 0, // Pushed right to the top edge
     width: "100%",
     alignItems: "center",
     zIndex: 20,
+    paddingVertical: 16, // Makes the grab area much taller!
   },
   dragHandle: {
-    width: 40,
-    height: 5,
+    width: 45,
+    height: 6,
     borderRadius: 3,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 12,
+    right: 16,
+    zIndex: 30,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    padding: 6,
+    borderRadius: 20,
   },
 });

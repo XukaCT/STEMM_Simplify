@@ -1,12 +1,12 @@
 import Slider from "@react-native-community/slider";
 import * as ImagePicker from "expo-image-picker";
-import * as MediaLibrary from "expo-media-library";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ArrowLeft,
   CheckCircle2,
   Paperclip,
   Save,
+  Trash2,
   Video,
   Wind,
 } from "lucide-react-native";
@@ -22,53 +22,21 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// IMPORT OFFLINE STORAGE
+import { saveVideoLocally } from "../../utils/localStore";
+
 export default function ActivityPage() {
   const [activePhase, setActivePhase] = useState(1);
   const [fanDesign, setFanDesign] = useState("");
   const [bendAngle, setBendAngle] = useState("");
-  const [distance, setDistance] = useState(30); // Default to 30cm
+  const [distance, setDistance] = useState(30);
   const router = useRouter();
   const params = useLocalSearchParams();
   const { startTime } = params;
 
-  const handleRecordAndSave = async () => {
-    // 1. Request permissions for both Camera and Media Library
-    const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
-    const libraryStatus = await MediaLibrary.requestPermissionsAsync();
+  // Temporarily hold the recorded video before saving the result row
+  const [tempVideoUri, setTempVideoUri] = useState<string | null>(null);
 
-    if (
-      cameraStatus.status !== "granted" ||
-      libraryStatus.status !== "granted"
-    ) {
-      Alert.alert(
-        "Permission Needed",
-        "Camera and Gallery permissions are required to save videos.",
-      );
-      return;
-    }
-
-    try {
-      // 2. Launch the camera specifically for video
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: "videos" as any,
-        allowsEditing: true,
-        quality: 1,
-      });
-
-      // 3. If the user recorded something, save it
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const uri = result.assets[0].uri;
-
-        await MediaLibrary.saveToLibraryAsync(uri);
-        Alert.alert("Success", "Video saved to your camera roll!");
-      }
-    } catch (error) {
-      console.error("Error recording or saving video:", error);
-      Alert.alert("Error", "Something went wrong while saving the video.");
-    }
-  };
-
-  // Start with an empty array so there are no results on load
   const [results, setResults] = useState<
     {
       id: string;
@@ -76,11 +44,55 @@ export default function ActivityPage() {
       phase: string;
       distance: string;
       angle: string;
+      videoUri?: string | null;
     }[]
   >([]);
 
-  const handleSaveResult = () => {
+  const handleRecordAndSave = async () => {
+    const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (cameraStatus.status !== "granted") {
+      Alert.alert(
+        "Permission Needed",
+        "Camera permission is required to record videos.",
+      );
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ["videos"],
+        allowsEditing: false,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const uri = result.assets[0].uri;
+        // Queue the video!
+        setTempVideoUri(uri);
+        Alert.alert(
+          "Success",
+          "Video recorded! Fill in the form and click 'Save Result' to attach it to this test.",
+        );
+      }
+    } catch (error) {
+      console.error("Error recording video:", error);
+      Alert.alert("Error", "Something went wrong while recording the video.");
+    }
+  };
+
+  const handleSaveResult = async () => {
     if (!fanDesign || !bendAngle) return;
+
+    // If a video was queued, save it permanently to the local folder immediately
+    let permanentUri = null;
+    if (tempVideoUri) {
+      permanentUri = await saveVideoLocally(
+        tempVideoUri,
+        `handfan_test_${Date.now()}.mp4`,
+        "handfan",
+      );
+    }
 
     const newResult = {
       id: Date.now().toString(),
@@ -88,21 +100,25 @@ export default function ActivityPage() {
       phase: `Phase ${activePhase}`,
       distance: `${distance}cm`,
       angle: `${bendAngle}°`,
+      videoUri: permanentUri,
     };
 
-    // Add the new result to the top of the list
     setResults([newResult, ...results]);
-
-    // Clear the inputs for the next test
     setFanDesign("");
     setBendAngle("");
+    setTempVideoUri(null); // Clear the queue for the next test
+  };
+
+  // NEW: Delete a specific result from the list
+  const handleDeleteResult = (id: string) => {
+    setResults(results.filter((item) => item.id !== id));
   };
 
   const handleComplete = () => {
     router.push({
       pathname: "/HandFanChallenge/handFanResult",
       params: {
-        results: JSON.stringify(results),
+        results: encodeURIComponent(JSON.stringify(results)),
         startTime: startTime as string,
       },
     });
@@ -122,7 +138,6 @@ export default function ActivityPage() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Phase Toggles */}
         <View style={styles.toggleContainer}>
           <TouchableOpacity
             style={[
@@ -175,17 +190,15 @@ export default function ActivityPage() {
           </Text>
         </View>
 
-        {/* Input Card */}
         <View style={styles.card}>
           <Text style={styles.label}>Fan Design</Text>
           <TextInput
             style={styles.input}
             value={fanDesign}
             onChangeText={setFanDesign}
-            placeholder="e.g. 123"
+            placeholder="e.g. Accordion Fold"
           />
 
-          {/* Interactive Slider for Distance */}
           <Text style={styles.label}>Distance: {distance}cm</Text>
           <Slider
             style={styles.slider}
@@ -214,11 +227,26 @@ export default function ActivityPage() {
           />
 
           <TouchableOpacity
-            style={styles.recordButton}
+            style={[
+              styles.recordButton,
+              tempVideoUri && {
+                borderColor: "#10B981",
+                backgroundColor: "#F0FDF4",
+              },
+            ]}
             onPress={handleRecordAndSave}
           >
-            <Video size={20} color="#ccc" />
-            <Text style={styles.recordButtonText}>Record Video</Text>
+            <Video size={20} color={tempVideoUri ? "#10B981" : "#ccc"} />
+            <Text
+              style={[
+                styles.recordButtonText,
+                tempVideoUri && { color: "#10B981" },
+              ]}
+            >
+              {tempVideoUri
+                ? "Video Queued! (Click Save Result)"
+                : "Record Video"}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -230,7 +258,6 @@ export default function ActivityPage() {
           </TouchableOpacity>
         </View>
 
-        {/* Results List */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Results</Text>
 
@@ -241,14 +268,34 @@ export default function ActivityPage() {
           ) : (
             results.map((item) => (
               <View key={item.id} style={styles.resultItem}>
-                <View>
+                <View style={styles.resultDetails}>
                   <Text style={styles.resultDesign}>{item.design}</Text>
                   <Text style={styles.resultMeta}>{item.phase}</Text>
                   <Text style={styles.resultMeta}>
                     Distance: {item.distance}
                   </Text>
                 </View>
-                <Text style={styles.resultAngle}>{item.angle}</Text>
+
+                <View style={styles.resultRightContent}>
+                  <View style={styles.resultScoreContainer}>
+                    <Text style={styles.resultAngle}>{item.angle}</Text>
+                    {item.videoUri && (
+                      <Video
+                        size={16}
+                        color="#10B981"
+                        style={{ marginTop: 4 }}
+                      />
+                    )}
+                  </View>
+
+                  {/* Delete Button */}
+                  <TouchableOpacity
+                    onPress={() => handleDeleteResult(item.id)}
+                    style={styles.deleteButton}
+                  >
+                    <Trash2 size={20} color="#EF4444" />
+                  </TouchableOpacity>
+                </View>
               </View>
             ))
           )}
@@ -353,8 +400,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   largeInput: { fontSize: 18, paddingVertical: 12 },
-
-  // New slider styles
   slider: { width: "100%", height: 40, marginTop: -5 },
   rulerContainer: {
     flexDirection: "row",
@@ -364,7 +409,6 @@ const styles = StyleSheet.create({
     marginTop: -5,
   },
   rulerText: { fontSize: 11, color: "#999" },
-
   recordButton: {
     backgroundColor: "#2A2A2A",
     flexDirection: "row",
@@ -372,6 +416,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 14,
     borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#2A2A2A",
     gap: 8,
     marginBottom: 12,
   },
@@ -406,6 +452,20 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 10,
     marginBottom: 10,
+  },
+  resultDetails: {
+    flex: 1,
+  },
+  resultRightContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  resultScoreContainer: {
+    alignItems: "flex-end",
+  },
+  deleteButton: {
+    padding: 6,
   },
   resultDesign: {
     fontWeight: "700",

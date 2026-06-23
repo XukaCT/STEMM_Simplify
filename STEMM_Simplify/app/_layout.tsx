@@ -9,10 +9,8 @@ const REQUIRED_FOLDERS = [
   "parachute",
   "sound",
   "handfan",
-  "earthquake",
   "human_performance",
   "reaction",
-  "breathing",
 ];
 
 export default function RootLayout() {

@@ -15,7 +15,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ReactionBoardActivity() {
   const router = useRouter();
-
   const params = useLocalSearchParams();
   const { startTime } = params;
 
@@ -46,14 +45,15 @@ export default function ReactionBoardActivity() {
   const currentTargetPos = useRef({ x: 120, y: 150 });
   const currentTouchPos = useRef({ x: 0, y: 0, isActive: false });
   const traceScore = useRef({ hits: 0, total: 0 });
+
   const traceIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const traceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Track the animated value without triggering re-renders
   useEffect(() => {
     const listenerId = targetPos.addListener((value) => {
       currentTargetPos.current = value;
     });
+
     return () => {
       targetPos.removeListener(listenerId);
       if (reactionTimeoutRef.current) clearTimeout(reactionTimeoutRef.current);
@@ -63,7 +63,6 @@ export default function ReactionBoardActivity() {
     };
   }, []);
 
-  // Set up PanResponder to track user's finger
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -99,6 +98,7 @@ export default function ReactionBoardActivity() {
     }
     setReactionState("waiting");
     const randomDelay = Math.floor(Math.random() * 2500) + 1500;
+
     reactionTimeoutRef.current = setTimeout(() => {
       setReactionState("ready");
       reactionStartTime.current = Date.now();
@@ -133,7 +133,6 @@ export default function ReactionBoardActivity() {
   };
 
   // --- PHASE 2 (TRACING) LOGIC ---
-
   const moveDotRandomly = () => {
     const randomX = Math.random() * 220 + 20;
     const randomY = Math.random() * 260 + 20;
@@ -159,6 +158,7 @@ export default function ReactionBoardActivity() {
     setTracingState("active");
     traceScore.current = { hits: 0, total: 0 };
     currentTouchPos.current.isActive = false;
+
     targetPos.setValue({ x: 120, y: 150 });
     moveDotRandomly();
 
@@ -168,7 +168,6 @@ export default function ReactionBoardActivity() {
 
     traceIntervalRef.current = setInterval(() => {
       traceScore.current.total += 1;
-
       if (currentTouchPos.current.isActive) {
         const trueDotX = currentTargetPos.current.x + 30;
         const trueDotY = currentTargetPos.current.y + 30;
@@ -191,6 +190,7 @@ export default function ReactionBoardActivity() {
     const finalAccuracy =
       Math.round((traceScore.current.hits / traceScore.current.total) * 100) ||
       0;
+
     setAccuracy(finalAccuracy);
     setTracingState("result");
   };
@@ -214,7 +214,8 @@ export default function ReactionBoardActivity() {
     router.push({
       pathname: "/ReactionChallenge/reactionResult",
       params: {
-        activityData: JSON.stringify(records),
+        // SECURE ROUTING: encodeURIComponent to prevent string breaks
+        activityData: encodeURIComponent(JSON.stringify(records)),
         startTime: startTime as string,
       },
     });
@@ -222,7 +223,6 @@ export default function ReactionBoardActivity() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -234,7 +234,6 @@ export default function ReactionBoardActivity() {
         <Text style={styles.headerSubtitle}>Neuroscience + Biology</Text>
       </View>
 
-      {/* Tab Switcher */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[
@@ -274,13 +273,13 @@ export default function ReactionBoardActivity() {
           </Text>
         </TouchableOpacity>
       </View>
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
         scrollEnabled={tracingState !== "active"}
       >
-        {/* --- PHASE 1 UI --- */}
         {activePhase === 1 && (
           <View>
             <View style={styles.infoBanner}>
@@ -317,6 +316,7 @@ export default function ReactionBoardActivity() {
                     Dominant Hand
                   </Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   style={[
                     styles.handButton,
@@ -337,7 +337,6 @@ export default function ReactionBoardActivity() {
               </View>
             </View>
 
-            {/* Reaction Test Area */}
             <TouchableOpacity
               activeOpacity={1}
               onPress={handleReactionTap}
@@ -362,11 +361,13 @@ export default function ReactionBoardActivity() {
                   </Text>
                 </>
               )}
+
               {reactionState === "waiting" && (
                 <Text style={[styles.testTitle, { color: "#fff" }]}>
                   Wait for green...
                 </Text>
               )}
+
               {reactionState === "ready" && (
                 <Text
                   style={[styles.testTitle, { color: "#fff", fontSize: 32 }]}
@@ -374,6 +375,7 @@ export default function ReactionBoardActivity() {
                   TAP NOW!
                 </Text>
               )}
+
               {reactionState === "result" && (
                 <>
                   <Text
@@ -420,7 +422,6 @@ export default function ReactionBoardActivity() {
           </View>
         )}
 
-        {/* --- PHASE 2 UI --- */}
         {activePhase === 2 && (
           <View>
             <View style={styles.infoBanner}>
@@ -443,7 +444,6 @@ export default function ReactionBoardActivity() {
               />
             </View>
 
-            {/* Tracing Test Area */}
             <View
               style={[
                 styles.testArea,
@@ -555,7 +555,6 @@ export default function ReactionBoardActivity() {
           </View>
         )}
 
-        {/* --- COMMON RESULTS LIST --- */}
         <View style={styles.resultsCard}>
           <Text style={styles.sectionTitle}>Team Results</Text>
           {records.length === 0 ? (
@@ -575,7 +574,6 @@ export default function ReactionBoardActivity() {
           )}
         </View>
 
-        {/* --- UNDERSTANDING BOX --- */}
         <View style={styles.understandingBox}>
           <Text style={styles.understandingTitle}>
             Understanding Reaction Time
@@ -606,7 +604,6 @@ export default function ReactionBoardActivity() {
           </View>
         </View>
 
-        {/* Complete Button */}
         <TouchableOpacity
           style={styles.completeButton}
           onPress={handleComplete}
@@ -625,7 +622,6 @@ const styles = StyleSheet.create({
   backButton: { marginBottom: 16 },
   headerTitle: { fontSize: 24, fontWeight: "bold", color: "#fff" },
   headerSubtitle: { fontSize: 14, color: "#999", marginTop: 4 },
-
   tabContainer: {
     flexDirection: "row",
     backgroundColor: "#fff",
@@ -646,9 +642,7 @@ const styles = StyleSheet.create({
   tabButtonActive: { backgroundColor: "#FF5A00" },
   tabText: { fontSize: 13, fontWeight: "bold", color: "#4B5563" },
   tabTextActive: { color: "#fff" },
-
   scrollContent: { padding: 16, backgroundColor: "#fff" },
-
   infoBanner: {
     backgroundColor: "#FFF7ED",
     borderColor: "#FFEDD5",
@@ -664,7 +658,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   infoBannerText: { color: "#4B5563", fontSize: 12, lineHeight: 18 },
-
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -689,7 +682,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9FAFB",
     marginBottom: 16,
   },
-
   handSelectorRow: { flexDirection: "row", gap: 8 },
   handButton: {
     flex: 1,
@@ -703,7 +695,6 @@ const styles = StyleSheet.create({
   handButtonActive: { backgroundColor: "#FF5A00", borderColor: "#FF5A00" },
   handButtonText: { fontSize: 13, fontWeight: "500", color: "#4B5563" },
   handButtonTextActive: { color: "#fff" },
-
   testArea: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -727,7 +718,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   testSubtitle: { fontSize: 13, color: "#6B7280" },
-
   tracingHint: {
     position: "absolute",
     top: 16,
@@ -737,7 +727,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     zIndex: 10,
   },
-
   targetDot: {
     position: "absolute",
     width: 60,
@@ -747,7 +736,6 @@ const styles = StyleSheet.create({
     borderWidth: 6,
     borderColor: "#FFEDD5",
   },
-
   actionButton: {
     backgroundColor: "#FF5A00",
     alignItems: "center",
@@ -758,7 +746,6 @@ const styles = StyleSheet.create({
   },
   actionButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
   resultActions: { flexDirection: "row", marginBottom: 24 },
-
   resultsCard: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -788,7 +775,6 @@ const styles = StyleSheet.create({
   recordName: { fontSize: 14, fontWeight: "bold", color: "#111" },
   recordPhase: { fontSize: 11, color: "#6B7280", marginTop: 2 },
   recordScore: { fontSize: 16, fontWeight: "bold" },
-
   understandingBox: {
     backgroundColor: "#EFF6FF",
     borderRadius: 12,
@@ -824,7 +810,6 @@ const styles = StyleSheet.create({
   },
   bulletList: { gap: 6 },
   bulletItem: { fontSize: 11, color: "#1E3A8A", lineHeight: 16 },
-
   completeButton: {
     backgroundColor: "#FF5A00",
     flexDirection: "row",

@@ -181,7 +181,7 @@ export default function ParachuteResults() {
 
       await saveActivityToFeed(activityData);
 
-      alert("Results saved offline! 🚀");
+      alert("Results saved! 🚀");
       setIsSubmitting(false);
       router.replace("/(tabs)/dashboard");
     } catch (e) {

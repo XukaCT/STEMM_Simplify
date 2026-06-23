@@ -25,14 +25,6 @@ export const ACTIVITIES = [
   },
   {
     id: "4",
-    title: "Earthquake-Resistant Structure",
-    category: "Engineering",
-    desc: "Design structures that withstand vibration",
-    icon: "business-outline",
-    routeName: "EarthquakeChallenge/earthquake",
-  },
-  {
-    id: "5",
     title: "Human Performance Lab",
     category: "Medical Science",
     desc: "Measure speed, smoothness, and coordination",
@@ -40,19 +32,11 @@ export const ACTIVITIES = [
     routeName: "HumanPerformanceChallenge/humanperformance",
   },
   {
-    id: "6",
+    id: "5",
     title: "Reaction Board Challenge",
     category: "Neuroscience",
     desc: "Measure reaction time and coordination",
     icon: "timer-outline",
     routeName: "ReactionChallenge/reaction",
-  },
-  {
-    id: "7",
-    title: "Breathing Pace Trainer",
-    category: "Physiology",
-    desc: "Measure lung capacity and breath control",
-    icon: "water-outline",
-    routeName: "BreathChallenge/breath",
   },
 ];

@@ -27,22 +27,18 @@ export default function HumanPerformanceActivity() {
   const [selectedMovement, setSelectedMovement] = useState("Arm Circle");
   const startTimeRef = useRef(0);
 
-  // Holds the list of completed recordings
   const [records, setRecords] = useState<any[]>([]);
 
-  // Refs for timer and tracking latest state inside the 10s timeout closure
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const currentMetricRef = useRef(0);
   const movementRef = useRef(selectedMovement);
 
-  // Update movement ref whenever it changes so the timer knows the right label
   useEffect(() => {
     movementRef.current = selectedMovement;
   }, [selectedMovement]);
 
   const movementOptions = ["Arm Circle", "Horizontal Sweep", "Vertical Raise"];
 
-  // --- SENSOR LOGIC ---
   useEffect(() => {
     let subscription: any;
 
@@ -57,7 +53,6 @@ export default function HumanPerformanceActivity() {
         const totalForce = Math.sqrt(x * x + y * y + z * z);
         const variance = Math.abs(totalForce - 1) * 15;
 
-        // Update both UI state and the background Ref
         if (variance > currentMetricRef.current) {
           currentMetricRef.current = variance;
           setCurrentMetric(variance);
@@ -73,7 +68,6 @@ export default function HumanPerformanceActivity() {
     };
   }, [isRecording]);
 
-  // --- RECORDING ACTIONS ---
   const stopAndSaveRecording = () => {
     setIsRecording(false);
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -90,10 +84,8 @@ export default function HumanPerformanceActivity() {
 
   const toggleRecording = () => {
     if (isRecording) {
-      // MANUAL STOP
       stopAndSaveRecording();
     } else {
-      // START recording
       setCurrentMetric(0);
       currentMetricRef.current = 0;
       startTimeRef.current = Date.now();
@@ -105,7 +97,8 @@ export default function HumanPerformanceActivity() {
     router.push({
       pathname: "/HumanPerformanceChallenge/HumanPerformanceResult",
       params: {
-        activityData: JSON.stringify(records),
+        // SECURE ROUTING: encodeURIComponent prevents JSON strings from breaking the URL path
+        activityData: encodeURIComponent(JSON.stringify(records)),
         startTime: startTime as string,
       },
     });
@@ -113,7 +106,6 @@ export default function HumanPerformanceActivity() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -126,7 +118,6 @@ export default function HumanPerformanceActivity() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Instructions Banner */}
         <View style={styles.infoBanner}>
           <Text style={styles.infoBannerText}>
             🤸 Select a movement, press{" "}
@@ -136,11 +127,8 @@ export default function HumanPerformanceActivity() {
           </Text>
         </View>
 
-        {/* Main Recording Card */}
         <View style={styles.card}>
           <Text style={styles.inputLabel}>Movement Type</Text>
-
-          {/* Horizontal ScrollView for a clean, single-row selector */}
           <View style={styles.selectorWrapper}>
             <ScrollView
               horizontal
@@ -170,7 +158,6 @@ export default function HumanPerformanceActivity() {
             </ScrollView>
           </View>
 
-          {/* Metric Readout Area */}
           <View style={styles.readoutBox}>
             <Text
               style={[styles.readoutValue, isRecording && { color: "#FF5A00" }]}
@@ -184,7 +171,6 @@ export default function HumanPerformanceActivity() {
             </Text>
           </View>
 
-          {/* Record Button */}
           <TouchableOpacity
             style={[
               styles.recordButton,
@@ -203,7 +189,6 @@ export default function HumanPerformanceActivity() {
           </TouchableOpacity>
         </View>
 
-        {/* Recorded So Far Card */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>
             Recorded So Far ({records.length})
@@ -235,7 +220,6 @@ export default function HumanPerformanceActivity() {
           )}
         </View>
 
-        {/* Understanding Box */}
         <View style={styles.understandingBox}>
           <View style={styles.understandingHeader}>
             <Microscope size={18} color="#1E3A8A" />
@@ -273,7 +257,6 @@ export default function HumanPerformanceActivity() {
           </View>
         </View>
 
-        {/* View Full Results Button */}
         <TouchableOpacity
           style={[
             styles.resultsButton,

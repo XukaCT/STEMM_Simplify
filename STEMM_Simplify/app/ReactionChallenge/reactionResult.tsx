@@ -23,25 +23,31 @@ import ReactionTimeList from "../../components/reaction/ReactionTimeList";
 import UniversalMap from "../../components/universalMap";
 import { GlobalStyles } from "../../constants/GlobalStyles";
 
+// ADD OFFLINE STORAGE IMPORT
+import { saveActivityToFeed } from "../../utils/localStore";
+
 const ACTIVITY_ID = "6";
 
 export default function ReactionResult() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const activityData = params.activityData;
-
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Parse the records
+  // Safely parse the records
   const [records, setRecords] = useState<any[]>(() => {
     if (activityData && typeof activityData === "string") {
       try {
-        return JSON.parse(activityData);
+        return JSON.parse(decodeURIComponent(activityData));
       } catch (e) {
-        console.error("Failed to parse activity data", e);
-        return [];
+        try {
+          return JSON.parse(activityData); // fallback
+        } catch (err) {
+          console.error("Failed to parse activity data", err);
+          return [];
+        }
       }
     }
     return [];
@@ -62,6 +68,7 @@ export default function ReactionResult() {
     });
     return totalPoints;
   };
+
   const finalScore = calculateRealPoints();
 
   // Location States
@@ -142,25 +149,32 @@ export default function ReactionResult() {
   };
 
   const handleSubmit = async () => {
-    if (rating === 0) return;
+    if (rating === 0 || isSubmitting) return;
     setIsSubmitting(true);
 
     try {
       const submissionData = {
+        collectionName: "reaction_challenge", // Maps directly to your Video Hub filters
         activityName: "Reaction Board Challenge",
+        activityType: "reaction",
+        title: "Reaction Test Complete!",
+        teamName: "My Team",
+        locationName: locationName || "Local Device",
         rating,
         comments,
-        teamRecords: records,
-        locationName: locationName,
-        rawCoordinates: coordinate,
+        teamRecords: records, // Store the full payload
         points: finalScore,
         createdAt: new Date().toISOString(),
+        heroLabel: "TESTS", // UI Data for FeedCard
+        heroStat: `${records.length} DONE`, // Dynamic FeedCard badge
       };
 
-      setTimeout(() => {
-        setIsSubmitting(false);
-        router.replace("/(tabs)/dashboard");
-      }, 500);
+      // Save offline via MegaFeed
+      await saveActivityToFeed(submissionData);
+
+      alert(`Team Results Saved! 🚀 You earned ${finalScore} points!`);
+      setIsSubmitting(false);
+      router.replace("/(tabs)/dashboard");
     } catch (e) {
       console.error("Submission error: ", e);
       alert("Failed to save results.");
@@ -175,7 +189,6 @@ export default function ReactionResult() {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* Header (Global) */}
         <View style={GlobalStyles.headerContainer}>
           <View style={GlobalStyles.successCircle}>
             <Check size={32} color="#fff" />
@@ -186,7 +199,6 @@ export default function ReactionResult() {
           </Text>
         </View>
 
-        {/* Data List Component (Refactored) */}
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
             <Zap size={20} color="#FF5A00" />
@@ -195,7 +207,6 @@ export default function ReactionResult() {
           <ReactionTimeList records={records} />
         </View>
 
-        {/* Rating Card (Global) */}
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
             <Star size={20} color="#FF5A00" />
@@ -214,7 +225,6 @@ export default function ReactionResult() {
           </View>
         </View>
 
-        {/* Comments Card (Global) */}
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
             <MessageSquare size={20} color="#FF5A00" />
@@ -235,7 +245,6 @@ export default function ReactionResult() {
           />
         </View>
 
-        {/* INTERACTIVE LOCATION CARD (Global) */}
         <TouchableOpacity
           style={[GlobalStyles.card, GlobalStyles.interactiveLocationCard]}
           onPress={openMap}
@@ -256,7 +265,6 @@ export default function ReactionResult() {
           </View>
         </TouchableOpacity>
 
-        {/* Submit Button (Global) */}
         <TouchableOpacity
           style={[
             GlobalStyles.submitButton,
@@ -278,7 +286,6 @@ export default function ReactionResult() {
         )}
       </ScrollView>
 
-      {/* --- FULL SCREEN MAP MODAL (Global) --- */}
       <Modal
         visible={isMapVisible}
         animationType="slide"

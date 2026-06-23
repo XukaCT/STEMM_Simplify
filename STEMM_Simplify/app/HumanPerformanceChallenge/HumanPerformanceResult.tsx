@@ -24,6 +24,9 @@ import MovementList from "../../components/humanPerformance/MovementList";
 import UniversalMap from "../../components/universalMap";
 import { GlobalStyles } from "../../constants/GlobalStyles";
 
+// ADD OFFLINE STORAGE IMPORT
+import { saveActivityToFeed } from "../../utils/localStore";
+
 const ACTIVITY_ID = "5";
 
 export default function HumanPerformanceResult() {
@@ -34,10 +37,15 @@ export default function HumanPerformanceResult() {
   const [records, setRecords] = useState<any[]>(() => {
     if (activityData && typeof activityData === "string") {
       try {
-        return JSON.parse(activityData);
+        // Safely decode the string we passed from Activity 1
+        return JSON.parse(decodeURIComponent(activityData));
       } catch (e) {
-        console.error("Failed to parse activity data", e);
-        return [];
+        try {
+          return JSON.parse(activityData); // Fallback
+        } catch (err) {
+          console.error("Failed to parse activity data", err);
+          return [];
+        }
       }
     }
     return [];
@@ -136,27 +144,33 @@ export default function HumanPerformanceResult() {
   };
 
   const handleSubmit = async () => {
-    if (rating === 0) return;
+    if (rating === 0 || isSubmitting) return;
     setIsSubmitting(true);
 
     try {
       const submissionData = {
+        collectionName: "human_performance_challenge", // Maps to feed
         activityName: "Human Performance Lab",
+        activityType: "generic",
+        title: "Motor Control Logged!",
+        teamName: "My Team",
         rating,
         comments,
-        recordedMovements: records,
+        recordedMovements: records, // Store the array
         bestPerformance: bestRecord,
-        locationName: locationName,
-        rawCoordinates: coordinate,
+        locationName: locationName || "Local Device",
         points: finalScore,
         createdAt: new Date().toISOString(),
+        heroLabel: "MOVEMENTS", // UI Data for FeedCard
+        heroStat: `${records.length} LOGS`, // Dynamic stat
       };
 
-      setTimeout(() => {
-        alert(`New High Score! 🏆 You earned ${finalScore} points!`);
-        setIsSubmitting(false);
-        router.replace("/(tabs)/dashboard");
-      }, 500);
+      // Save offline via MegaFeed
+      await saveActivityToFeed(submissionData);
+
+      alert(`Results saved! 🚀`);
+      setIsSubmitting(false);
+      router.replace("/(tabs)/dashboard");
     } catch (e) {
       console.error("Submission error: ", e);
       alert("Failed to save results.");
@@ -171,7 +185,6 @@ export default function HumanPerformanceResult() {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* HEADER (Global) */}
         <View style={GlobalStyles.headerContainer}>
           <View style={GlobalStyles.successCircle}>
             <Check size={32} color="#fff" />
@@ -182,7 +195,6 @@ export default function HumanPerformanceResult() {
           </Text>
         </View>
 
-        {/* SCORE DISPLAY CARD (Global + Overrides) */}
         <View
           style={[
             GlobalStyles.card,
@@ -211,7 +223,6 @@ export default function HumanPerformanceResult() {
           </Text>
         </View>
 
-        {/* REFACTORED COMPONENT: Recorded Movement Data List */}
         <View style={styles.dataCard}>
           <View style={styles.dataCardHeader}>
             <Text style={styles.dataCardTitle}>RECORDED MOVEMENT DATA</Text>
@@ -219,7 +230,6 @@ export default function HumanPerformanceResult() {
           <MovementList records={records} />
         </View>
 
-        {/* BEST PERFORMANCE CARD (Local specific style) */}
         {bestRecord && (
           <View style={styles.bestCard}>
             <View style={styles.trophyContainer}>
@@ -235,7 +245,6 @@ export default function HumanPerformanceResult() {
           </View>
         )}
 
-        {/* UNDERSTANDING BOX (Local specific style) */}
         <View style={styles.understandingBox}>
           <View style={styles.understandingHeader}>
             <Microscope size={18} color="#1E3A8A" />
@@ -265,7 +274,6 @@ export default function HumanPerformanceResult() {
           </View>
         </View>
 
-        {/* RATING CARD (Global) */}
         <View style={GlobalStyles.card}>
           <Text style={GlobalStyles.ratingTitle}>Rate This Activity</Text>
           <View style={GlobalStyles.starsContainer}>
@@ -295,7 +303,6 @@ export default function HumanPerformanceResult() {
           />
         </View>
 
-        {/* LOCATION CARD (Global) */}
         <TouchableOpacity
           style={[GlobalStyles.card, GlobalStyles.interactiveLocationCard]}
           onPress={openMap}
@@ -316,7 +323,6 @@ export default function HumanPerformanceResult() {
           </View>
         </TouchableOpacity>
 
-        {/* SUBMIT BUTTON (Global) */}
         <TouchableOpacity
           style={[
             GlobalStyles.submitButton,
@@ -338,7 +344,6 @@ export default function HumanPerformanceResult() {
         )}
       </ScrollView>
 
-      {/* --- MAP MODAL (Global) --- */}
       <Modal
         visible={isMapVisible}
         animationType="slide"

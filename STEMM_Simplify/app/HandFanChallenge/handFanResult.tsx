@@ -65,11 +65,26 @@ export default function HandFanResult() {
     loadTempData();
   }, []);
 
-  const startTimeString = params.startTime as string;
-  const startTime = startTimeString ? parseInt(startTimeString) : Date.now();
-  const endTime = Date.now();
-  const sessionSeconds = Math.floor((endTime - startTime) / 1000);
-  const finalScore = Math.max(0, 5000 - sessionSeconds) + 1000;
+  // --- NEW SCIENTIFIC POINT SYSTEM (WITH ANTI-ABUSE CAP) ---
+  const calculatePoints = () => {
+    const basePoints = 1000;
+
+    // They only get trial points for a maximum of 3 tests
+    const validTrialsForPoints = Math.min(results.length, 3);
+    const trialPoints = validTrialsForPoints * 500;
+
+    // Performance points: Best angle achieved * 20
+    const bestAngle = Math.max(
+      0,
+      ...results.map((r) => parseInt(r.angle) || 0),
+    );
+    const performancePoints = bestAngle * 20;
+
+    return basePoints + trialPoints + performancePoints;
+  };
+
+  const finalScore = calculatePoints();
+  // ---------------------------------------------------------
 
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState("");

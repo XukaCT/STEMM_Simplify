@@ -11,10 +11,10 @@ export function useTeamData() {
       setTimeout(() => {
         setTeamData({
           teamName: "The Local Explorers",
-          grade: "Grade 3",
-          members: ["Alex", "Jordan"],
+          grade: "",
+          members: [],
           totalPoints: 120,
-          completeActivities: ["parachute_challenge"],
+          completeActivities: [""],
         });
         setTeamRank(1);
         setLoadingTeam(false);

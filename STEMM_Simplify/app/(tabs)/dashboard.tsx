@@ -17,12 +17,12 @@ import { useTeamData } from "../../hooks/useTeamData";
 
 export default function Dashboard() {
   const router = useRouter();
-  const { teamData, teamRank, loadingTeam } = useTeamData();
+  const { teamData, loadingTeam } = useTeamData(); // Removed teamRank as it's no longer used
 
   // 1. Fetch the offline data from the Video Hub
   const { feedItems, loading: feedLoading } = useMegaFeed();
 
-  // 2. Dynamically check which activities have been saved to the Video Hub
+  // 2. Dynamically check which activities have been saved
   const completedActivityIds = useMemo(() => {
     const completedIds: string[] = [];
 
@@ -30,7 +30,6 @@ export default function Dashboard() {
       const name = feed.collectionName?.toLowerCase() || "";
       const activityName = feed.activityName?.toLowerCase() || "";
 
-      // Match the Feed Data to the Activity IDs
       if (
         (name.includes("parachute") || activityName.includes("parachute")) &&
         !completedIds.includes("1")
@@ -62,10 +61,21 @@ export default function Dashboard() {
     return completedIds;
   }, [feedItems]);
 
-  // 3. Dynamically calculate the total points from the offline Video Hub
+  // 3. Dynamically calculate the total points
   const totalOfflinePoints = useMemo(() => {
     return feedItems.reduce((sum, item) => sum + (item.points || 0), 0);
   }, [feedItems]);
+
+  // 4. Calculate the new Offline "Status/Level" based on points
+  const teamStatus = useMemo(() => {
+    if (totalOfflinePoints >= 9000) return "67";
+    if (totalOfflinePoints >= 8000) return "Noob Lord!";
+    if (totalOfflinePoints >= 7000) return "Super Noob!";
+    if (totalOfflinePoints >= 6000) return "Still Noob";
+    if (totalOfflinePoints >= 4000) return "Kinda Noob";
+    if (totalOfflinePoints >= 2000) return "Less Noob";
+    return "Too Noob";
+  }, [totalOfflinePoints]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
@@ -97,20 +107,25 @@ export default function Dashboard() {
                 <View style={styles.statsRow}>
                   <View style={styles.statBox}>
                     <Text style={styles.statLabel}>Completed</Text>
-                    {/* Updates automatically based on offline data */}
                     <Text style={styles.statValue}>
                       {completedActivityIds.length}/5
                     </Text>
                   </View>
+
+                  {/* REPLACED RANK WITH DYNAMIC STATUS */}
                   <View style={styles.statBox}>
-                    <Text style={styles.statLabel}>Rank 🏆</Text>
-                    <Text style={styles.statValue}>
-                      {teamRank ? `#${teamRank}` : "--"}
+                    <Text style={styles.statLabel}>Status 🎖️</Text>
+                    <Text
+                      style={styles.statValue}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit // Shrinks text automatically if "Lead Scientist" is too long
+                    >
+                      {teamStatus}
                     </Text>
                   </View>
+
                   <View style={styles.statBox}>
                     <Text style={styles.statLabel}>Points</Text>
-                    {/* Updates automatically based on offline data */}
                     <Text style={styles.statValue}>{totalOfflinePoints}</Text>
                   </View>
                 </View>
@@ -121,13 +136,12 @@ export default function Dashboard() {
           <Text style={styles.sectionTitle}>Activities</Text>
 
           {ACTIVITIES.map((item) => {
-            // Check if the current activity's ID is in our completed list
             const isCompleted = completedActivityIds.includes(item.id);
             return (
               <ActivityCard
                 key={item.id}
                 item={item}
-                isCompleted={isCompleted} // Automatically turns the box green with a tick!
+                isCompleted={isCompleted}
               />
             );
           })}
@@ -162,13 +176,14 @@ const styles = StyleSheet.create({
   statBox: {
     backgroundColor: "rgba(0,0,0,0.15)",
     paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10, // Slightly reduced padding to give text more room
     borderRadius: 12,
     flex: 1,
     marginHorizontal: 4,
+    alignItems: "center", // Centers the new text titles
   },
   statLabel: { color: "rgba(255,255,255,0.8)", fontSize: 10, marginBottom: 4 },
-  statValue: { color: "#FFF", fontSize: 18, fontWeight: "bold" },
+  statValue: { color: "#FFF", fontSize: 16, fontWeight: "bold" }, // Reduced slightly for titles
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",

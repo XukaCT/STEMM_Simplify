@@ -35,10 +35,10 @@ export default function ResultScreen() {
     parsedRaw = params.results || [];
   }
   const results = parsedRaw;
+  const teamName = (params.teamName as string) || "Unknown Team";
 
   const startTimeString = params.startTime as string;
   const startTime = startTimeString ? parseInt(startTimeString) : Date.now();
-  const teamName = (params.teamName as string) || "Unknown Team";
 
   const endTime = Date.now();
   const sessionSeconds = Math.floor((endTime - startTime) / 1000);

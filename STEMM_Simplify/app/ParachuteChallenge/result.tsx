@@ -66,9 +66,21 @@ export default function ParachuteResults() {
   const timeWith = parseFloat(params.timeWith as string) || 0;
   const startTime = parseInt(params.startTime as string) || Date.now();
 
-  const endTime = Date.now();
-  const sessionSeconds = Math.floor((endTime - startTime) / 1000);
-  const finalScore = Math.max(0, 5000 - sessionSeconds) + 1000;
+  const calculatePoints = () => {
+    const basePoints = 1000;
+
+    // Performance points: Calculate the reduction in speed
+    // The bigger the difference, the better the parachute!
+    const speedDifference = Math.max(
+      0,
+      parseFloat(speedNo) - parseFloat(speedWith),
+    );
+    const performancePoints = Math.floor(speedDifference * 300);
+
+    return basePoints + performancePoints;
+  };
+
+  const finalScore = calculatePoints();
 
   const speedNo = timeNo > 0 ? (heightNo / timeNo).toFixed(2) : "0.00";
   const speedWith = timeWith > 0 ? (heightWith / timeWith).toFixed(2) : "0.00";

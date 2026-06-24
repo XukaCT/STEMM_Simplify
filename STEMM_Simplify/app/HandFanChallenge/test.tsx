@@ -2,32 +2,32 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Slider from "@react-native-community/slider";
 import { Video as ExpoVideo, ResizeMode } from "expo-av";
 import {
-  CameraView,
-  useCameraPermissions,
-  useMicrophonePermissions,
+    CameraView,
+    useCameraPermissions,
+    useMicrophonePermissions,
 } from "expo-camera";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-  ArrowLeft,
-  CheckCircle2,
-  Paperclip,
-  Play,
-  Save,
-  Trash2,
-  Video as VideoIcon,
-  Wind,
-  X,
+    ArrowLeft,
+    CheckCircle2,
+    Paperclip,
+    Play,
+    Save,
+    Trash2,
+    Video as VideoIcon,
+    Wind,
+    X,
 } from "lucide-react-native";
 import React, { useRef, useState } from "react";
 import {
-  Alert,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { saveVideoLocally } from "../../utils/localStore";
@@ -433,7 +433,7 @@ export default function ActivityPage() {
         </View>
       </Modal>
 
-      {/* 🚀 FIXED CUSTOM CAMERA MODAL WITH PROTRACTOR OVERLAY 🚀 */}
+      {/* 🚀 NEW CUSTOM CAMERA MODAL WITH PROTRACTOR OVERLAY 🚀 */}
       <Modal
         visible={isCameraOpen}
         animationType="slide"
@@ -446,88 +446,71 @@ export default function ActivityPage() {
             ref={cameraRef}
             mode="video"
             facing="back"
-          />
+          >
+            {/* THE PROTRACTOR RULER OVERLAY */}
+            <View style={styles.protractorOverlay} pointerEvents="none">
+              <View style={styles.alignmentBox} />
+              <Text style={styles.alignmentText}>Align Paper Hinge Here</Text>
 
-          {/* THE PROTRACTOR RULER OVERLAY */}
-          <View style={styles.protractorOverlay} pointerEvents="none">
-            {/* Renders lines from -90 (West) to 90 (East) in 5-degree steps */}
-            {Array.from({ length: 37 }, (_, i) => -90 + i * 5).map((angle) => {
-              const isMajor = angle % 15 === 0; // 0, 15, 30, 45...
-              const isZero = angle === 0;
+              <View style={styles.pivotPoint} />
 
-              return (
+              {/* Renders the angled lines spreading out from the pivot */}
+              {Array.from({ length: 18 }, (_, i) => i * 10).map((angle) => (
                 <View
                   key={angle}
                   style={[
                     styles.angleLineContainer,
-                    { transform: [{ rotate: `${angle}deg` }] },
+                    { transform: [{ rotate: `-${angle}deg` }] },
                   ]}
                 >
-                  <View style={styles.angleTopHalf}>
-                    {/* Only show the number bubble on major 15-degree lines */}
-                    {isMajor && (
-                      <View
-                        style={[
-                          styles.angleLabelContainer,
-                          // FIX IS HERE: Use ${-angle} to invert properly without double-minuses
-                          { transform: [{ rotate: `${-angle}deg` }] },
-                        ]}
-                      >
-                        <Text style={styles.angleLabel}>
-                          {Math.abs(angle)}°
-                        </Text>
-                      </View>
-                    )}
-
-                    {/* The actual line (Short for minor, Long for major) */}
-                    <View
+                  <View style={styles.angleLineTransparent} />
+                  <View
+                    style={[
+                      styles.angleLine,
+                      angle === 0 ? styles.zeroDegreeLine : {},
+                    ]}
+                  >
+                    <Text
                       style={[
-                        styles.actualLine,
-                        isZero
-                          ? styles.zeroDegreeLine
-                          : isMajor
-                            ? styles.majorLine
-                            : styles.minorLine,
+                        styles.angleLabel,
+                        { transform: [{ rotate: `${angle}deg` }] },
                       ]}
-                    />
+                    >
+                      {angle}°
+                    </Text>
                   </View>
-                  <View style={styles.angleBottomHalf} />
                 </View>
-              );
-            })}
+              ))}
+            </View>
 
-            <View style={styles.pivotPoint} />
-            <View style={styles.alignmentBox} />
-            <Text style={styles.alignmentText}>Align Paper Hinge Here</Text>
-          </View>
+            {/* CAMERA CONTROLS */}
+            <View style={styles.cameraControlsContainer}>
+              <TouchableOpacity
+                style={styles.cameraCloseBtn}
+                onPress={() => setIsCameraOpen(false)}
+              >
+                <X size={28} color="#FFF" />
+              </TouchableOpacity>
 
-          {/* CAMERA CONTROLS */}
-          <View style={styles.cameraControlsContainer} pointerEvents="box-none">
-            <TouchableOpacity
-              style={styles.cameraCloseBtn}
-              onPress={() => setIsCameraOpen(false)}
-            >
-              <X size={28} color="#FFF" />
-            </TouchableOpacity>
+              {isRecording && (
+                <View style={styles.recordingIndicator}>
+                  <View style={styles.recordingDot} />
+                  <Text style={styles.recordingText}>REC</Text>
+                </View>
+              )}
 
-            {isRecording && (
-              <View style={styles.recordingIndicator}>
-                <View style={styles.recordingDot} />
-                <Text style={styles.recordingText}>REC</Text>
-              </View>
-            )}
-
-            <TouchableOpacity
-              onPress={toggleRecording}
-              style={styles.recordOuterCircle}
-            >
-              <View
-                style={
-                  isRecording ? styles.recordSquare : styles.recordInnerCircle
-                }
-              />
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                onPress={toggleRecording}
+                style={styles.recordOuterCircle}
+              >
+                <View
+                  style={
+                    isRecording ? styles.recordSquare : styles.recordInnerCircle
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+          </CameraView>
         </View>
       </Modal>
     </SafeAreaView>
@@ -706,100 +689,75 @@ const styles = StyleSheet.create({
   completeButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 
   // --- NEW CAMERA OVERLAY STYLES ---
-  cameraContainer: { flex: 1, backgroundColor: "#000", position: "relative" },
-  camera: { ...StyleSheet.absoluteFillObject },
-
-  // --- FLIPPED PROTRACTOR OVERLAY STYLES ---
-  protractorOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    zIndex: 10,
-  },
-
-  pivotPoint: {
-    position: "absolute",
-    bottom: 150,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: "#FF5A00",
-    zIndex: 10,
-  },
+  cameraContainer: { flex: 1, backgroundColor: "#000" },
+  camera: { flex: 1 },
+  protractorOverlay: { ...StyleSheet.absoluteFillObject, alignItems: "center" },
   alignmentBox: {
     position: "absolute",
-    bottom: 144,
+    top: 100,
     width: 60,
-    height: 24,
+    height: 20,
     borderWidth: 2,
     borderColor: "#10B981",
     borderStyle: "dashed",
   },
   alignmentText: {
     position: "absolute",
-    bottom: 115,
+    top: 125,
     color: "#10B981",
     fontSize: 12,
     fontWeight: "bold",
     textShadowColor: "rgba(0,0,0,0.8)",
     textShadowRadius: 4,
   },
+  pivotPoint: {
+    position: "absolute",
+    top: 145,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#FF5A00",
+    zIndex: 10,
+  },
 
+  // Angle Ruler Math: Pivot at top: 150. Container spans -100 to 400.
   angleLineContainer: {
     position: "absolute",
-    bottom: -150,
-    width: 60,
-    height: 600,
-    alignItems: "center",
-  },
-  angleTopHalf: {
-    height: 300,
-    width: 60,
-    alignItems: "center",
-    justifyContent: "flex-end", // Pushes lines to grow perfectly from the bottom pivot
-  },
-  angleBottomHalf: {
-    height: 300,
-    width: 60,
-  },
-  actualLine: {
-    backgroundColor: "rgba(255, 90, 0, 0.7)",
-  },
-  majorLine: {
+    top: -100,
     width: 2,
-    height: 180, // Long line for numbers
+    height: 500,
   },
-  minorLine: {
-    width: 1,
-    height: 155, // Shorter line for ticks
-    backgroundColor: "rgba(255, 90, 0, 0.3)",
+  angleLineTransparent: { width: 2, height: 250 }, // Invisible top half
+  angleLine: {
+    width: 2,
+    height: 250,
+    backgroundColor: "rgba(255, 90, 0, 0.4)",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    paddingBottom: 10,
   },
-  zeroDegreeLine: {
-    backgroundColor: "rgba(16, 185, 129, 0.8)",
-    width: 3,
-    height: 190, // Longest baseline
-  },
-  angleLabelContainer: {
-    position: "absolute",
-    bottom: 185, // Hovers perfectly right above the major lines
-    backgroundColor: "rgba(0,0,0,0.7)",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
+  zeroDegreeLine: { backgroundColor: "rgba(16, 185, 129, 0.6)" },
   angleLabel: {
     color: "#FFF",
     fontWeight: "900",
-    fontSize: 11,
+    fontSize: 14,
+    textShadowColor: "rgba(0,0,0,0.9)",
+    textShadowRadius: 4,
+    textShadowOffset: { width: 1, height: 1 },
   },
 
-  // Decoupled Camera Controls
+  // Camera Controls
   cameraControlsContainer: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 20,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingBottom: 50,
+    alignItems: "center",
   },
   cameraCloseBtn: {
     position: "absolute",
-    top: 50,
+    top: -600,
     right: 20,
     backgroundColor: "rgba(0,0,0,0.5)",
     padding: 8,
@@ -807,7 +765,7 @@ const styles = StyleSheet.create({
   },
   recordingIndicator: {
     position: "absolute",
-    top: 55,
+    top: -550,
     left: 20,
     flexDirection: "row",
     alignItems: "center",
@@ -824,12 +782,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   recordingText: { color: "#FFF", fontWeight: "bold", fontSize: 12 },
-
-  // Bottom Record Button
   recordOuterCircle: {
-    position: "absolute",
-    bottom: 40,
-    alignSelf: "center",
     width: 70,
     height: 70,
     borderRadius: 35,

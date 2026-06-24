@@ -51,11 +51,24 @@ export default function HumanPerformanceResult() {
     return [];
   });
 
-  const startTimeString = params.startTime as string;
-  const startTime = startTimeString ? parseInt(startTimeString) : Date.now();
-  const endTime = Date.now();
-  const sessionSeconds = Math.floor((endTime - startTime) / 1000);
-  const finalScore = Math.max(0, 5000 - sessionSeconds) + 1000;
+  // --- NEW SCIENTIFIC POINT SYSTEM ---
+  const calculatePoints = () => {
+    const basePoints = 1000;
+
+    // Trial points: 400 per movement recorded
+    const trialPoints = (records?.length || 0) * 400;
+
+    // Performance points: 500 for every movement with a "Smooth" status
+    const smoothCount = (records || []).filter(
+      (r: any) => r.status === "Smooth",
+    ).length;
+    const performancePoints = smoothCount * 500;
+
+    return basePoints + trialPoints + performancePoints;
+  };
+
+  const finalScore = calculatePoints();
+  // ---------------------------------------------------------
 
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState("");
@@ -219,7 +232,7 @@ export default function HumanPerformanceResult() {
             {finalScore}
           </Text>
           <Text style={{ color: "#666", fontSize: 14, marginTop: 5 }}>
-            Completed in {sessionSeconds}s
+            Trial & Smoothness Bonuses Applied!
           </Text>
         </View>
 

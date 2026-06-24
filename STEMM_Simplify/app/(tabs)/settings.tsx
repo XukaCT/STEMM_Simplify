@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import React from "react";
 import {
   Alert,
@@ -19,7 +20,9 @@ export default function SettingsScreen() {
       {
         text: "Log Out",
         style: "destructive",
-        onPress: () => {},
+        onPress: () => {
+          router.replace("/");
+        },
       },
     ]);
   };

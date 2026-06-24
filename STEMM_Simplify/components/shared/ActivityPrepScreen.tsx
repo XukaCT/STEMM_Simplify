@@ -10,6 +10,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+export interface KnowledgeBlock {
+  title: string;
+  details: string[];
+}
+
 interface ActivityPrepScreenProps {
   title: string;
   subtitle: string;
@@ -17,6 +22,8 @@ interface ActivityPrepScreenProps {
   equipmentList: string[];
   instructions: string[];
   nextRoute: any;
+  diagram?: React.ReactNode;
+  knowledgeBlocks?: KnowledgeBlock[];
 }
 
 export default function ActivityPrepScreen({
@@ -26,8 +33,11 @@ export default function ActivityPrepScreen({
   equipmentList,
   instructions,
   nextRoute,
+  diagram,
+  knowledgeBlocks,
 }: ActivityPrepScreenProps) {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState(0);
   const [checkedItems, setCheckedItems] = useState(
     new Array(equipmentList.length).fill(false),
   );
@@ -48,7 +58,6 @@ export default function ActivityPrepScreen({
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }} edges={["top"]}>
-      {/* Dark Top Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -60,68 +69,143 @@ export default function ActivityPrepScreen({
         <Text style={styles.headerSubtitle}>{subtitle}</Text>
       </View>
 
+      <View style={styles.tabBar}>
+        {["Instructions", "Diagram", "Knowledge"].map((tab, index) => (
+          <TouchableOpacity
+            key={tab}
+            onPress={() => setActiveTab(index)}
+            style={[
+              styles.tabButton,
+              activeTab === index && styles.tabButtonActive,
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === index && styles.tabTextActive,
+              ]}
+            >
+              {tab}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
         overScrollMode="never"
       >
-        {/* Orange Overview Card */}
-        <View style={styles.overviewCard}>
-          <Text style={styles.cardLabel}>Overview</Text>
-          <Text style={styles.overviewText}>{overview}</Text>
-        </View>
-
-        {/* Equipment Needed Section */}
-        <View style={styles.whiteCard}>
-          <View style={styles.cardHeaderRow}>
-            <Text style={styles.cardEmoji}>📋</Text>
-            <Text style={styles.sectionTitle}>Equipment Needed</Text>
-          </View>
-
-          {equipmentList.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.equipmentRow}
-              onPress={() => toggleCheckbox(index)}
-              activeOpacity={0.6}
-            >
-              <Ionicons
-                name={checkedItems[index] ? "checkbox" : "square-outline"}
-                size={22}
-                color={checkedItems[index] ? "#FF5A00" : "#CCC"}
-              />
-              <Text
-                style={[
-                  styles.equipmentText,
-                  checkedItems[index] && styles.checkedText,
-                ]}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Instructions Section */}
-        <View style={styles.whiteCard}>
-          <View style={styles.cardHeaderRow}>
-            <Text style={styles.cardEmoji}>📝</Text>
-            <Text style={styles.sectionTitle}>Instructions</Text>
-          </View>
-
-          {instructions.map((step, index) => (
-            <View key={index} style={styles.instructionRow}>
-              <View style={styles.numberCircle}>
-                <Text style={styles.numberText}>{index + 1}</Text>
-              </View>
-              <Text style={styles.stepText}>{step}</Text>
+        {activeTab === 0 && (
+          <View>
+            <View style={styles.overviewCard}>
+              <Text style={styles.cardLabel}>Overview</Text>
+              <Text style={styles.overviewText}>{overview}</Text>
             </View>
-          ))}
-        </View>
+
+            <View style={styles.whiteCard}>
+              <View style={styles.cardHeaderRow}>
+                <Ionicons
+                  name="build"
+                  size={20}
+                  color="#FF5A00"
+                  style={styles.cardIcon}
+                />
+                <Text style={styles.sectionTitle}>Equipment Needed</Text>
+              </View>
+              {equipmentList.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.equipmentRow}
+                  onPress={() => toggleCheckbox(index)}
+                  activeOpacity={0.6}
+                >
+                  <Ionicons
+                    name={checkedItems[index] ? "checkbox" : "square-outline"}
+                    size={22}
+                    color={checkedItems[index] ? "#FF5A00" : "#CCC"}
+                  />
+                  <Text
+                    style={[
+                      styles.equipmentText,
+                      checkedItems[index] && styles.checkedText,
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.whiteCard}>
+              <View style={styles.cardHeaderRow}>
+                <Ionicons
+                  name="list"
+                  size={20}
+                  color="#FF5A00"
+                  style={styles.cardIcon}
+                />
+                <Text style={styles.sectionTitle}>Instructions</Text>
+              </View>
+              {instructions.map((step, index) => (
+                <View key={index} style={styles.instructionRow}>
+                  <View style={styles.numberCircle}>
+                    <Text style={styles.numberText}>{index + 1}</Text>
+                  </View>
+                  <Text style={styles.stepText}>{step}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {activeTab === 1 && (
+          <View style={styles.whiteCard}>
+            <Text style={styles.sectionTitle}>Activity Setup Diagram</Text>
+            {diagram ? (
+              <View style={{ marginTop: 20 }}>{diagram}</View>
+            ) : (
+              <View style={styles.placeholderDiagram}>
+                <Ionicons name="construct-outline" size={48} color="#CCC" />
+                <Text style={styles.placeholderText}>Diagram coming soon.</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {activeTab === 2 && (
+          <View style={styles.whiteCard}>
+            <View style={styles.cardHeaderRow}>
+              <Ionicons
+                name="school"
+                size={20}
+                color="#FF5A00"
+                style={styles.cardIcon}
+              />
+              <Text style={styles.sectionTitle}>Science & Theory</Text>
+            </View>
+
+            {knowledgeBlocks && knowledgeBlocks.length > 0 ? (
+              knowledgeBlocks.map((block, idx) => (
+                <View key={idx} style={styles.knowledgeBlock}>
+                  <Text style={styles.knowledgeTitle}>{block.title}</Text>
+                  {block.details.map((text, i) => (
+                    <Text key={i} style={styles.knowledgeDetail}>
+                      {text}
+                    </Text>
+                  ))}
+                </View>
+              ))
+            ) : (
+              <Text style={styles.placeholderText}>
+                Detailed knowledge and curriculum links coming soon.
+              </Text>
+            )}
+          </View>
+        )}
       </ScrollView>
 
-      {/* Fixed Footer Button */}
       <View style={styles.footer}>
         <TouchableOpacity
           style={styles.startButton}
@@ -139,16 +223,38 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: "#000",
     paddingHorizontal: 20,
-    paddingBottom: 30,
     paddingTop: 10,
   },
   backButton: { marginBottom: 10 },
   headerTitle: { color: "#FFF", fontSize: 24, fontWeight: "bold" },
-  headerSubtitle: { color: "#999", fontSize: 14, marginTop: 4 },
+  headerSubtitle: {
+    color: "#999",
+    fontSize: 14,
+    marginTop: 4,
+    marginBottom: 16,
+  },
+
+  tabBar: {
+    flexDirection: "row",
+    backgroundColor: "#000",
+    paddingHorizontal: 10,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: "center",
+    borderBottomWidth: 3,
+    borderBottomColor: "transparent",
+  },
+  tabButtonActive: { borderBottomColor: "#FF5A00" },
+  tabText: { color: "#9CA3AF", fontSize: 14, fontWeight: "bold" },
+  tabTextActive: { color: "#FFF" },
+
   scrollContent: {
     padding: 20,
     paddingBottom: 120,
     backgroundColor: "#F7F8FA",
+    minHeight: "100%",
   },
   overviewCard: {
     backgroundColor: "#FF5A00",
@@ -175,8 +281,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+    paddingBottom: 10,
   },
-  cardEmoji: { fontSize: 18, marginRight: 10 },
+  cardIcon: { marginRight: 10 },
   sectionTitle: { fontSize: 16, fontWeight: "bold", color: "#333" },
   equipmentRow: {
     flexDirection: "row",
@@ -202,6 +311,36 @@ const styles = StyleSheet.create({
   },
   numberText: { color: "#FFF", fontSize: 12, fontWeight: "bold" },
   stepText: { flex: 1, fontSize: 14, color: "#555", lineHeight: 20 },
+
+  placeholderDiagram: {
+    height: 200,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    padding: 20,
+  },
+  placeholderText: {
+    color: "#9CA3AF",
+    textAlign: "center",
+    marginTop: 10,
+    lineHeight: 20,
+  },
+  knowledgeBlock: { marginBottom: 20 },
+  knowledgeTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#1E3A8A",
+    marginBottom: 8,
+  },
+  knowledgeDetail: {
+    fontSize: 13,
+    color: "#4B5563",
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+
   footer: {
     position: "absolute",
     bottom: 0,

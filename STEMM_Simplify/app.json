@@ -19,14 +19,16 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "READ_MEDIA_IMAGES",
-        "READ_MEDIA_VIDEO",
-        "READ_MEDIA_AUDIO",
-        "RECORD_AUDIO",
-        "CAMERA"
-      ]
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+      ],
+      "package": "aa.sa"
     },
     "web": {
       "output": "static",
@@ -47,11 +49,17 @@
           "photosPermission": "Allow STEMM to access your photos.",
           "savePhotosPermission": "Allow STEMM to save videos to your gallery."
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bd801c84-39fb-4f0d-97f2-73968c318826"
+      }
     }
   }
 }

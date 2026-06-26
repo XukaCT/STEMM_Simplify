@@ -61,17 +61,17 @@ export default function StartupScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000" },
+  container: { flex: 1, backgroundColor: "black" },
   brandContainer: { flex: 1, alignItems: "center", paddingHorizontal: 40 },
   iconCircle: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
-    shadowColor: "#FF5A00",
+    shadowColor: "#00A2D9",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 20,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   authCard: {
-    backgroundColor: "#111214",
+    backgroundColor: "black",
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     padding: 30,
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   primaryButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     height: 60,
     borderRadius: 20,
     alignItems: "center",

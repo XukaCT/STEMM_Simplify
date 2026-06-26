@@ -146,13 +146,13 @@ export default function BaselineDrop() {
           onPress={recordVideo}
           activeOpacity={0.7}
         >
-          <Ionicons name="videocam" size={24} color="#FF5A00" />
+          <Ionicons name="videocam" size={24} color="#00A2D9" />
           <Text style={styles.recordButtonText}>Record Baseline Drop</Text>
           {videoUri && (
             <Ionicons
               name="checkmark-circle"
               size={20}
-              color="#FF5A00"
+              color="#10B981"
               style={{ marginLeft: 10 }}
             />
           )}
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headerTitle: { color: "#FFF", fontSize: 22, fontWeight: "bold" },
-  headerSubtitle: { color: "#FF5A00", fontSize: 14, marginTop: 4 },
+  headerSubtitle: { color: "#999", fontSize: 14, marginTop: 4 },
   scrollContent: {
     padding: 20,
     paddingBottom: 100,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#EFEFEF",
   },
   nextButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     borderRadius: 15,
     height: 56,
     flexDirection: "row",
@@ -264,13 +264,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#FFF",
     borderWidth: 2,
-    borderColor: "#FF5A00",
+    borderColor: "#00A2D9",
     borderRadius: 12,
     padding: 15,
     borderStyle: "dashed",
   },
   recordButtonText: {
-    color: "#FF5A00",
+    color: "#00A2D9",
     fontWeight: "bold",
     marginLeft: 10,
     fontSize: 16,

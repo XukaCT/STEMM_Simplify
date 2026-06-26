@@ -71,7 +71,7 @@ export default function ParachuteAdjustment() {
           <View>
             <Text style={styles.headerTitle}>With Toy Adjustment</Text>
             <Text style={styles.headerSubtitle}>
-              Parachute attached — same height
+              Drop 2: Parachute attached — same height
             </Text>
           </View>
         </View>
@@ -129,7 +129,7 @@ export default function ParachuteAdjustment() {
           onPress={recordVideo}
           activeOpacity={0.7}
         >
-          <Ionicons name="videocam" size={24} color="#00C853" />
+          <Ionicons name="videocam" size={24} color="#00A2D9" />
           <Text style={styles.recordButtonText}>Record Impact Video</Text>
           {videoUri && (
             <Ionicons
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   resultsButton: {
-    backgroundColor: "#00C853",
+    backgroundColor: "#00A2D9",
     borderRadius: 15,
     height: 56,
     flexDirection: "row",
@@ -267,13 +267,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#FFF",
     borderWidth: 2,
-    borderColor: "#00C853",
+    borderColor: "#00A2D9",
     borderRadius: 12,
     padding: 15,
     borderStyle: "dashed",
   },
   recordButtonText: {
-    color: "#00C853",
+    color: "#00A2D9",
     fontWeight: "bold",
     marginLeft: 10,
     fontSize: 16,

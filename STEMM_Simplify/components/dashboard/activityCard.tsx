@@ -57,9 +57,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#EFEFEF",
   },
-  activityCardCompleted: { backgroundColor: "#F0FDF4", borderColor: "#BBF7D0" },
+  activityCardCompleted: { backgroundColor: "#F0FDF4", borderColor: "#2EE6A6" },
   activityIconBox: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     width: 48,
     height: 48,
     borderRadius: 12,
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   activityTitle: { fontSize: 15, fontWeight: "bold", color: "#333" },
   activityCategory: {
     fontSize: 11,
-    color: "#FF5A00",
+    color: "#00A2D9",
     marginTop: 2,
     marginBottom: 4,
   },

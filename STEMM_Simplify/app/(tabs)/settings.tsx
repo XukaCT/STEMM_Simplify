@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   },
   statusText: { fontSize: 12, fontWeight: "600" },
   logoutButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",

@@ -109,7 +109,7 @@ export default function ActivityPrepScreen({
                 <Ionicons
                   name="build"
                   size={20}
-                  color="#FF5A00"
+                  color="#42ADD9"
                   style={styles.cardIcon}
                 />
                 <Text style={styles.sectionTitle}>Equipment Needed</Text>
@@ -124,7 +124,7 @@ export default function ActivityPrepScreen({
                   <Ionicons
                     name={checkedItems[index] ? "checkbox" : "square-outline"}
                     size={22}
-                    color={checkedItems[index] ? "#FF5A00" : "#CCC"}
+                    color={checkedItems[index] ? "#42ADD9" : "#CCC"}
                   />
                   <Text
                     style={[
@@ -143,7 +143,7 @@ export default function ActivityPrepScreen({
                 <Ionicons
                   name="list"
                   size={20}
-                  color="#FF5A00"
+                  color="#42ADD9"
                   style={styles.cardIcon}
                 />
                 <Text style={styles.sectionTitle}>Instructions</Text>
@@ -180,7 +180,7 @@ export default function ActivityPrepScreen({
               <Ionicons
                 name="school"
                 size={20}
-                color="#FF5A00"
+                color="#42ADD9"
                 style={styles.cardIcon}
               />
               <Text style={styles.sectionTitle}>Science & Theory</Text>
@@ -246,9 +246,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 3,
     borderBottomColor: "transparent",
   },
-  tabButtonActive: { borderBottomColor: "#FF5A00" },
+  tabButtonActive: { borderBottomColor: "#00A2D9" },
   tabText: { color: "#9CA3AF", fontSize: 14, fontWeight: "bold" },
-  tabTextActive: { color: "#FFF" },
+  tabTextActive: { color: "#00A2D9" },
 
   scrollContent: {
     padding: 20,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     minHeight: "100%",
   },
   overviewCard: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   numberCircle: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#42ADD9",
     width: 24,
     height: 24,
     borderRadius: 12,
@@ -350,12 +350,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(247, 248, 250, 0.9)",
   },
   startButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#42ADD9",
     borderRadius: 12,
     height: 56,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#FF5A00",
+    shadowColor: "#00A2D9 ",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,

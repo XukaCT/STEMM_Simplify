@@ -9,15 +9,15 @@ export default function RootLayout() {
         safeAreaInsets: { top: 0, bottom: 0 },
         sceneContainerStyle: { backgroundColor: "#000000" },
         tabBarStyle: {
-          backgroundColor: "#000000",
+          backgroundColor: "#040C15",
           borderTopWidth: 0,
           height: 60,
           left: 0,
           right: 0,
           bottom: 0,
         },
-        tabBarActiveTintColor: "#FF5A00",
-        tabBarInactiveTintColor: "#666666",
+        tabBarActiveTintColor: "#42ADD9",
+        tabBarInactiveTintColor: "#FFFFFF",
         headerShown: false,
         position: "absolute",
         bottom: 0,
@@ -57,4 +57,3 @@ export default function RootLayout() {
     </Tabs>
   );
 }
-

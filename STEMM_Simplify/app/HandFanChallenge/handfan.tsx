@@ -98,7 +98,7 @@ const CodedFanDiagram = () => (
         style={{
           width: 4,
           height: 120,
-          backgroundColor: "#FF5A00",
+          backgroundColor: "#00A2D9",
           position: "absolute",
           top: 10,
           transform: [{ rotate: "-20deg" }],

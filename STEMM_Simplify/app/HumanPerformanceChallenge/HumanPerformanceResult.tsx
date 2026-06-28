@@ -21,7 +21,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MovementList from "../../components/humanPerformance/MovementList";
-import UniversalMap from "../../components/universalMap";
 import { GlobalStyles } from "../../constants/GlobalStyles";
 
 // ADD OFFLINE STORAGE IMPORT
@@ -378,16 +377,7 @@ export default function HumanPerformanceResult() {
               <Text style={GlobalStyles.modalConfirmText}>Confirm</Text>
             </TouchableOpacity>
           </View>
-          <UniversalMap
-            initialRegion={{
-              latitude: tempCoordinate?.latitude || -37.8136,
-              longitude: tempCoordinate?.longitude || 144.9631,
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
-            }}
-            tempCoordinate={tempCoordinate}
-            onPress={(e: any) => setTempCoordinate(e.nativeEvent.coordinate)}
-          />
+
           <View style={GlobalStyles.mapInstructionBanner}>
             <Text style={GlobalStyles.mapInstructionText}>
               Tap anywhere on the map to drop a pin.

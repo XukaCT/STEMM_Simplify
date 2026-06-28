@@ -24,7 +24,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import UniversalMap from "../../components/universalMap";
 import { GlobalStyles } from "../../constants/GlobalStyles";
 import { saveActivityToFeed } from "../../utils/localStore";
 
@@ -394,16 +393,6 @@ export default function HandFanResult() {
               <Text style={GlobalStyles.modalConfirmText}>Confirm</Text>
             </TouchableOpacity>
           </View>
-          <UniversalMap
-            initialRegion={{
-              latitude: tempCoordinate?.latitude || -37.8136,
-              longitude: tempCoordinate?.longitude || 144.9631,
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
-            }}
-            tempCoordinate={tempCoordinate}
-            onPress={(e: any) => setTempCoordinate(e.nativeEvent.coordinate)}
-          />
         </View>
       </Modal>
     </SafeAreaView>

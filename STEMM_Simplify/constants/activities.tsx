@@ -39,4 +39,12 @@ export const ACTIVITIES = [
     icon: "timer-outline",
     routeName: "ReactionChallenge/reaction",
   },
+  {
+    id: "6",
+    title: "Earthquake Challenge",
+    category: "Physics",
+    desc: "Measure reaction time and coordination",
+    icon: "timer-outline",
+    routeName: "EarthquakeChallenge/earthquake",
+  },
 ];

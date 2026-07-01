@@ -1,13 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Video as ExpoVideo, ResizeMode } from "expo-av"; // Video Player
-import * as Location from "expo-location";
+import { Video as ExpoVideo, ResizeMode } from "expo-av";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Check,
-  MapPin,
   MessageSquare,
   Play,
-  Star,
   Video as VideoIcon,
   X,
 } from "lucide-react-native";
@@ -49,7 +46,6 @@ export default function HandFanResult() {
     setCurrentPlayUri(null);
   };
 
-  // Load the data directly from the safe local storage
   useEffect(() => {
     const loadTempData = async () => {
       try {
@@ -64,15 +60,10 @@ export default function HandFanResult() {
     loadTempData();
   }, []);
 
-  // --- NEW SCIENTIFIC POINT SYSTEM (WITH ANTI-ABUSE CAP) ---
   const calculatePoints = () => {
     const basePoints = 1000;
-
-    // They only get trial points for a maximum of 3 tests
     const validTrialsForPoints = Math.min(results.length, 3);
     const trialPoints = validTrialsForPoints * 500;
-
-    // Performance points: Best angle achieved * 20
     const bestAngle = Math.max(
       0,
       ...results.map((r) => parseInt(r.angle) || 0),
@@ -83,92 +74,15 @@ export default function HandFanResult() {
   };
 
   const finalScore = calculatePoints();
-  // ---------------------------------------------------------
 
-  const [rating, setRating] = useState(0);
   const [comments, setComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [coordinate, setCoordinate] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [locationName, setLocationName] = useState<string | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
-  const [isMapVisible, setIsMapVisible] = useState(false);
-  const [tempCoordinate, setTempCoordinate] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-
-  const fetchAddressFromCoords = async (lat: number, lng: number) => {
-    try {
-      let geocodeArray = await Location.reverseGeocodeAsync({
-        latitude: lat,
-        longitude: lng,
-      });
-      if (geocodeArray && geocodeArray.length > 0) {
-        const place = geocodeArray[0];
-        const streetInfo = place.name || place.street;
-        const cityInfo = place.city || place.subregion || place.region;
-        setLocationName(
-          [streetInfo, cityInfo].filter(Boolean).join(", ") || "Unknown area",
-        );
-      } else {
-        setLocationName("Address not found");
-      }
-    } catch (error) {
-      setLocationError("Failed to fetch address");
-    }
-  };
-
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setLocationError("Permission denied");
-        return;
-      }
-      try {
-        let currentLocation = await Location.getCurrentPositionAsync({});
-        const initialCoords = {
-          latitude: currentLocation.coords.latitude,
-          longitude: currentLocation.coords.longitude,
-        };
-        setCoordinate(initialCoords);
-        await fetchAddressFromCoords(
-          initialCoords.latitude,
-          initialCoords.longitude,
-        );
-      } catch (error) {
-        setLocationError("Failed to fetch location");
-      }
-    })();
-  }, []);
-
-  const openMap = () => {
-    if (coordinate) setTempCoordinate(coordinate);
-    setIsMapVisible(true);
-  };
-
-  const confirmNewLocation = async () => {
-    setIsMapVisible(false);
-    if (tempCoordinate) {
-      setLocationName("Updating address...");
-      setCoordinate(tempCoordinate);
-      await fetchAddressFromCoords(
-        tempCoordinate.latitude,
-        tempCoordinate.longitude,
-      );
-    }
-  };
-
   const handleSubmit = async () => {
-    if (rating === 0 || isSubmitting) return;
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
-      // Find the first valid video to use as the Main Video for the Dashboard Hub
       const mainVideoUrl = results.find((r) => r.videoUri)?.videoUri || null;
 
       const activityData = {
@@ -177,10 +91,9 @@ export default function HandFanResult() {
         activityType: "video",
         title: "Engineering Test Complete!",
         teamName: "My Team",
-        rating,
         comments,
-        results: results, // Pass the entire array to the MegaFeed
-        locationName: locationName || "Local Device",
+        results: results,
+        locationName: "Local Device",
         videoUrl: mainVideoUrl,
         points: finalScore,
         createdAt: new Date().toISOString(),
@@ -189,11 +102,8 @@ export default function HandFanResult() {
       };
 
       await saveActivityToFeed(activityData);
-
-      // Clean up the temporary storage so it doesn't stay on the device forever!
       await AsyncStorage.removeItem("@temp_handfan_data");
 
-      Alert.alert("Success", "Results submitted offline! 🚀");
       setIsSubmitting(false);
       router.replace("/(tabs)/dashboard");
     } catch (e) {
@@ -220,10 +130,9 @@ export default function HandFanResult() {
           </Text>
         </View>
 
-        {/* DUMMY READ-ONLY RESULTS SECTION */}
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
-            <VideoIcon size={20} color="#0284C7" />
+            <VideoIcon size={20} color="#FF6B00" />
             <Text style={GlobalStyles.cardTitle}>Final Test Log</Text>
           </View>
 
@@ -234,7 +143,7 @@ export default function HandFanResult() {
               No results recorded.
             </Text>
           ) : (
-            results.map((item, index) => (
+            results.map((item) => (
               <View key={item.id} style={styles.readOnlyBlock}>
                 <View style={styles.readOnlyRow}>
                   <View style={{ flex: 1 }}>
@@ -251,7 +160,7 @@ export default function HandFanResult() {
                     style={styles.playButton}
                     onPress={() => openVideo(item.videoUri!)}
                   >
-                    <Play size={16} color="#0284C7" fill="#0284C7" />
+                    <Play size={16} color="#FF6B00" fill="#FF6B00" />
                     <Text style={styles.playButtonText}>Watch Test Video</Text>
                   </TouchableOpacity>
                 ) : (
@@ -266,25 +175,7 @@ export default function HandFanResult() {
 
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
-            <Star size={20} color="#0284C7" />
-            <Text style={GlobalStyles.cardTitle}>Rate this Activity</Text>
-          </View>
-          <View style={GlobalStyles.starsContainer}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <TouchableOpacity key={star} onPress={() => setRating(star)}>
-                <Star
-                  size={36}
-                  color={rating >= star ? "#0284C7" : "#D1D5DB"}
-                  fill={rating >= star ? "#0284C7" : "transparent"}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <View style={GlobalStyles.card}>
-          <View style={GlobalStyles.cardHeader}>
-            <MessageSquare size={20} color="#0284C7" />
+            <MessageSquare size={20} color="#FF6B00" />
             <Text style={GlobalStyles.cardTitle}>Outcome Comments</Text>
           </View>
           <Text style={GlobalStyles.commentsLabel}>
@@ -303,32 +194,12 @@ export default function HandFanResult() {
         </View>
 
         <TouchableOpacity
-          style={[GlobalStyles.card, GlobalStyles.interactiveLocationCard]}
-          onPress={openMap}
-          activeOpacity={0.8}
-        >
-          <View style={GlobalStyles.cardHeader}>
-            <MapPin size={20} color="#0284C7" />
-            <Text style={GlobalStyles.cardTitle}>Location (Tap to Edit)</Text>
-          </View>
-          <View style={GlobalStyles.locationBox}>
-            <MapPin size={16} color="#888" />
-            <View style={GlobalStyles.locationTextContainer}>
-              <Text style={GlobalStyles.locationTitle}>Logged Location</Text>
-              <Text style={GlobalStyles.locationSubtitle}>
-                {locationError || locationName || "Fetching address..."}
-              </Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity
           style={[
             GlobalStyles.submitButton,
-            { backgroundColor: "#0284C7" },
-            (rating === 0 || isSubmitting) && GlobalStyles.submitButtonDisabled,
+            { backgroundColor: "#FF6B00" },
+            isSubmitting && GlobalStyles.submitButtonDisabled,
           ]}
-          disabled={rating === 0 || isSubmitting}
+          disabled={isSubmitting}
           onPress={handleSubmit}
         >
           {isSubmitting ? (
@@ -337,11 +208,6 @@ export default function HandFanResult() {
             <Text style={GlobalStyles.submitButtonText}>Submit Results</Text>
           )}
         </TouchableOpacity>
-        {rating === 0 && (
-          <Text style={GlobalStyles.footerText}>
-            Please rate the activity to continue
-          </Text>
-        )}
       </ScrollView>
 
       {/* REWATCH MODAL */}
@@ -371,36 +237,11 @@ export default function HandFanResult() {
           </View>
         </View>
       </Modal>
-
-      <Modal
-        visible={isMapVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
-        <View style={GlobalStyles.modalContainer}>
-          <View style={GlobalStyles.modalHeader}>
-            <TouchableOpacity
-              onPress={() => setIsMapVisible(false)}
-              style={GlobalStyles.modalCancelButton}
-            >
-              <X size={24} color="#111" />
-            </TouchableOpacity>
-            <Text style={GlobalStyles.modalTitle}>Adjust Location</Text>
-            <TouchableOpacity
-              onPress={confirmNewLocation}
-              style={GlobalStyles.modalConfirmButton}
-            >
-              <Text style={GlobalStyles.modalConfirmText}>Confirm</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  // Read Only List Styles
   readOnlyBlock: {
     backgroundColor: "#F9F9F9",
     borderRadius: 8,
@@ -429,7 +270,7 @@ const styles = StyleSheet.create({
     borderColor: "#BAE6FD",
   },
   playButtonText: {
-    color: "#0284C7",
+    color: "#FF6B00",
     fontWeight: "600",
     fontSize: 13,
     marginLeft: 6,
@@ -441,8 +282,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   noVideoText: { color: "#9CA3AF", fontSize: 12, fontStyle: "italic" },
-
-  // Rewatch Modal Styles
   modalBackground: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.9)",

@@ -42,9 +42,9 @@ export const ACTIVITIES = [
   {
     id: "6",
     title: "Earthquake Challenge",
-    category: "Physics",
-    desc: "Measure reaction time and coordination",
-    icon: "timer-outline",
+    category: "Engineering",
+    desc: "Design structures to withstand simulated earthquakes",
+    icon: "construct-outline",
     routeName: "EarthquakeChallenge/earthquake",
   },
 ];

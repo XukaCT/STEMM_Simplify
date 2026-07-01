@@ -1,11 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Accelerometer } from "expo-sensors";
-import {
-  Activity,
-  ArrowLeft,
-  ChevronRight,
-  Microscope,
-} from "lucide-react-native";
+import { Activity, ArrowLeft, ChevronRight } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ScrollView,
@@ -160,7 +155,7 @@ export default function HumanPerformanceActivity() {
 
           <View style={styles.readoutBox}>
             <Text
-              style={[styles.readoutValue, isRecording && { color: "#FF5A00" }]}
+              style={[styles.readoutValue, isRecording && { color: "#00A2D9" }]}
             >
               ±{currentMetric.toFixed(2)}cm
             </Text>
@@ -218,43 +213,6 @@ export default function HumanPerformanceActivity() {
               </View>
             ))
           )}
-        </View>
-
-        <View style={styles.understandingBox}>
-          <View style={styles.understandingHeader}>
-            <Microscope size={18} color="#1E3A8A" />
-            <Text style={styles.understandingTitle}>
-              Understanding Human Movement
-            </Text>
-          </View>
-
-          <Text style={styles.understandingIntro}>
-            The human body moves through coordinated muscle contractions and
-            joint rotations. Smooth, controlled movements indicate good{" "}
-            <Text style={{ fontWeight: "bold" }}>motor control</Text> and muscle
-            coordination.
-          </Text>
-
-          <View style={styles.keyFactsCard}>
-            <Text style={styles.keyFactsTitle}>KEY FACTS</Text>
-            <View style={styles.bulletList}>
-              <Text style={styles.bulletItem}>
-                • Slower movements tend to be smoother and more controlled
-              </Text>
-              <Text style={styles.bulletItem}>
-                • Practice improves coordination and reduces shakiness
-              </Text>
-              <Text style={styles.bulletItem}>
-                • Muscle fatigue increases movement irregularity
-              </Text>
-              <Text style={styles.bulletItem}>
-                • Range of motion varies by joint flexibility and warm-up
-              </Text>
-              <Text style={styles.bulletItem}>
-                • Medical professionals use motion analysis for rehabilitation
-              </Text>
-            </View>
-          </View>
         </View>
 
         <TouchableOpacity
@@ -317,7 +275,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9FAFB",
     marginRight: 8,
   },
-  selectorButtonActive: { backgroundColor: "#FF5A00", borderColor: "#FF5A00" },
+  selectorButtonActive: { backgroundColor: "#00A2D9", borderColor: "#00A2D9" },
   selectorText: { fontSize: 13, color: "#4B5563" },
   selectorTextActive: { color: "#fff", fontWeight: "bold" },
 
@@ -337,7 +295,7 @@ const styles = StyleSheet.create({
   readoutLabel: { fontSize: 13, color: "#9CA3AF" },
 
   recordButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -371,50 +329,11 @@ const styles = StyleSheet.create({
   recordStatus: { fontSize: 12, color: "#10B981", fontWeight: "600" },
   recordValueText: { fontSize: 15, fontWeight: "bold", color: "#FF5A00" },
 
-  understandingBox: {
-    backgroundColor: "#EFF6FF",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
-  },
-  understandingHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  understandingTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1E3A8A",
-    marginLeft: 8,
-  },
-  understandingIntro: {
-    fontSize: 13,
-    color: "#1E3A8A",
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  keyFactsCard: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#DBEAFE",
-  },
-  keyFactsTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: "#1E3A8A",
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
   bulletList: { gap: 6 },
   bulletItem: { fontSize: 12, color: "#1E3A8A", lineHeight: 18 },
 
   resultsButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

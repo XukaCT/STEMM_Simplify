@@ -157,18 +157,17 @@ export default function BaselineDrop() {
             />
           )}
         </TouchableOpacity>
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.nextButton}
+            activeOpacity={0.8}
+            onPress={handleNextStep}
+          >
+            <Text style={styles.nextButtonText}>Next: Add Parachute</Text>
+            <Ionicons name="chevron-forward" size={20} color="#FFF" />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.nextButton}
-          activeOpacity={0.8}
-          onPress={handleNextStep}
-        >
-          <Text style={styles.nextButtonText}>Next: Add Parachute</Text>
-          <Ionicons name="chevron-forward" size={20} color="#FFF" />
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }

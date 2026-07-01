@@ -37,6 +37,7 @@ export default function ActivityPage() {
   const [fanDesign, setFanDesign] = useState("");
   const [bendAngle, setBendAngle] = useState("");
   const [distance, setDistance] = useState(30);
+
   const router = useRouter();
   const params = useLocalSearchParams();
   const { startTime } = params;
@@ -154,6 +155,7 @@ export default function ActivityPage() {
       );
       return;
     }
+
     if (results.length === 0) {
       Alert.alert(
         "Missing Data",
@@ -161,6 +163,7 @@ export default function ActivityPage() {
       );
       return;
     }
+
     const hasAtLeastOneVideo = results.some((item) => item.videoUri);
     if (!hasAtLeastOneVideo) {
       Alert.alert(
@@ -238,23 +241,45 @@ export default function ActivityPage() {
           </TouchableOpacity>
         </View>
 
+        {/* DYNAMIC INSTRUCTION CARD */}
         <View style={styles.instructionCard}>
-          <Text style={styles.instructionTitle}>
-            Phase 1: Paper Fan Designs
-          </Text>
-          <Text style={styles.instructionBody}>
-            Try different fan fold patterns using paper and measure the bend
-            angle.
-          </Text>
+          {activePhase === 1 ? (
+            <>
+              <Text style={styles.instructionTitle}>
+                Phase 1: Paper Fan Designs
+              </Text>
+              <Text style={styles.instructionBody}>
+                Try different fan fold patterns using paper and measure the bend
+                angle.
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.instructionTitle}>
+                Phase 2: Reinforced Designs
+              </Text>
+              <Text style={styles.instructionBody}>
+                Attach paperclips or use stiffer materials to reinforce your
+                fan. Measure the new bend angle.
+              </Text>
+            </>
+          )}
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.label}>Fan Design</Text>
+          {/* DYNAMIC INPUT LABEL */}
+          <Text style={styles.label}>
+            {activePhase === 1 ? "Fan Design (Paper)" : "Reinforced Fan Design"}
+          </Text>
           <TextInput
             style={styles.input}
             value={fanDesign}
             onChangeText={setFanDesign}
-            placeholder="e.g. Accordion Fold"
+            placeholder={
+              activePhase === 1
+                ? "e.g. Accordion Fold"
+                : "e.g. Tape & Paperclips"
+            }
           />
 
           <Text style={styles.label}>Distance: {distance}cm</Text>
@@ -265,9 +290,9 @@ export default function ActivityPage() {
             step={5}
             value={distance}
             onValueChange={setDistance}
-            minimumTrackTintColor="#FF6B00"
+            minimumTrackTintColor="#0284C7"
             maximumTrackTintColor="#EFEFEF"
-            thumbTintColor="#FF6B00"
+            thumbTintColor="#0284C7"
           />
           <View style={styles.rulerContainer}>
             <Text style={styles.rulerText}>15cm</Text>
@@ -294,7 +319,7 @@ export default function ActivityPage() {
             ]}
             onPress={handleOpenCamera}
           >
-            <VideoIcon size={20} color={tempVideoUri ? "#10B981" : "#ccc"} />
+            <VideoIcon size={20} color={tempVideoUri ? "#10B981" : "#0284C7"} />
             <Text
               style={[
                 styles.recordButtonText,
@@ -318,6 +343,7 @@ export default function ActivityPage() {
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Results</Text>
+
           {results.length === 0 ? (
             <Text style={styles.emptyText}>
               No results saved yet. Run a test and click Save!
@@ -351,7 +377,7 @@ export default function ActivityPage() {
                     </TouchableOpacity>
                   )}
                   <TouchableOpacity onPress={() => handleDeleteResult(item.id)}>
-                    <Trash2 size={22} color="#EF4444" />
+                    <Trash2 size={22} color="red" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -359,37 +385,16 @@ export default function ActivityPage() {
           )}
         </View>
 
-        <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>Understanding Air Movement</Text>
-          <Text style={styles.infoBody}>
-            Air movement creates pressure differences that can move or bend
-            objects. Fans work by pushing air particles forward, creating wind.
-          </Text>
-          <Text style={styles.infoSubTitle}>Key Factors:</Text>
-          <Text style={styles.infoBullet}>
-            • Larger fan surface = more air pushed
-          </Text>
-          <Text style={styles.infoBullet}>
-            • Accordion folds create turbulent airflow
-          </Text>
-          <Text style={styles.infoBullet}>
-            • Closer distance = stronger air pressure
-          </Text>
-          <Text style={styles.infoBullet}>
-            • Stiffer paper bends less than flexible paper
-          </Text>
+        <View style={styles.bottomNav}>
+          <TouchableOpacity
+            style={styles.completeButton}
+            onPress={handleComplete}
+          >
+            <CheckCircle2 size={20} color="#fff" />
+            <Text style={styles.completeButtonText}>Complete Activity</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
-
-      <View style={styles.bottomNav}>
-        <TouchableOpacity
-          style={styles.completeButton}
-          onPress={handleComplete}
-        >
-          <CheckCircle2 size={20} color="#fff" />
-          <Text style={styles.completeButtonText}>Complete Activity</Text>
-        </TouchableOpacity>
-      </View>
 
       {/* REWATCH MODAL */}
       <Modal
@@ -433,7 +438,7 @@ export default function ActivityPage() {
         </View>
       </Modal>
 
-      {/* 🚀 FIXED CUSTOM CAMERA MODAL WITH PROTRACTOR OVERLAY 🚀 */}
+      {/*   FIXED CUSTOM CAMERA MODAL WITH PROTRACTOR OVERLAY   */}
       <Modal
         visible={isCameraOpen}
         animationType="slide"
@@ -469,13 +474,11 @@ export default function ActivityPage() {
                       <View
                         style={[
                           styles.angleLabelContainer,
-                          // FIX IS HERE: Use ${-angle} to invert properly without double-minuses
+                          // Use ${-angle} to invert properly without double-minuses
                           { transform: [{ rotate: `${-angle}deg` }] },
                         ]}
                       >
-                        <Text style={styles.angleLabel}>
-                          {Math.abs(angle)}°
-                        </Text>
+                        <Text style={styles.angleLabel}>{Math.abs(angle)}</Text>
                       </View>
                     )}
 
@@ -556,7 +559,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 8,
   },
-  toggleActive: { backgroundColor: "#FF6B00" },
+  toggleActive: { backgroundColor: "#0284C7" }, // CHANGED to brand orange
   toggleInactive: { backgroundColor: "#F5F5F5" },
   toggleText: { fontWeight: "600", fontSize: 15 },
   toggleTextActive: { color: "#fff" },
@@ -606,20 +609,21 @@ const styles = StyleSheet.create({
   },
   rulerText: { fontSize: 11, color: "#999" },
   recordButton: {
-    backgroundColor: "#2A2A2A",
+    backgroundColor: "#FFF",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: "#2A2A2A",
+    borderColor: "#0284C7", // CHANGED to brand orange
+    borderStyle: "dashed",
     gap: 8,
     marginBottom: 12,
   },
-  recordButtonText: { color: "#ccc", fontWeight: "600", fontSize: 15 },
+  recordButtonText: { color: "#0284C7", fontWeight: "600", fontSize: 15 }, // CHANGED to brand orange
   saveButton: {
-    backgroundColor: "#000",
+    backgroundColor: "green", // CHANGED to brand orange
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -656,33 +660,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   resultMeta: { fontSize: 12, color: "#888", marginTop: 2 },
-  resultAngle: { fontSize: 22, fontWeight: "bold", color: "#FF6B00" },
-  infoBox: {
-    backgroundColor: "#F0F7FF",
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#DDF0FF",
-  },
-  infoTitle: {
-    color: "#1E40AF",
-    fontWeight: "700",
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  infoBody: {
-    color: "#1E40AF",
-    fontSize: 13,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  infoSubTitle: {
-    color: "#1E40AF",
-    fontWeight: "700",
-    fontSize: 13,
-    marginBottom: 6,
-  },
-  infoBullet: { color: "#1E40AF", fontSize: 13, lineHeight: 20, marginLeft: 8 },
+  resultAngle: { fontSize: 22, fontWeight: "bold", color: "#FF5A00" },
+
   bottomNav: {
     position: "absolute",
     bottom: 0,
@@ -695,7 +674,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#EFEFEF",
   },
   completeButton: {
-    backgroundColor: "#000",
+    backgroundColor: "#0284C7",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -715,7 +694,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 10,
   },
-
   pivotPoint: {
     position: "absolute",
     bottom: 150,
@@ -743,7 +721,6 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0,0,0,0.8)",
     textShadowRadius: 4,
   },
-
   angleLineContainer: {
     position: "absolute",
     bottom: -150,
@@ -755,7 +732,7 @@ const styles = StyleSheet.create({
     height: 300,
     width: 60,
     alignItems: "center",
-    justifyContent: "flex-end", // Pushes lines to grow perfectly from the bottom pivot
+    justifyContent: "flex-end",
   },
   angleBottomHalf: {
     height: 300,

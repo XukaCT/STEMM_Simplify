@@ -264,14 +264,14 @@ export default function SoundPollutionHunter() {
                     onPress={() => playRecording(item.audioUri)}
                     style={styles.playIcon}
                   >
-                    <Ionicons name="play-circle" size={26} color="#FF6B00" />
+                    <Ionicons name="play-circle" size={26} color="#00A2D9" />
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     onPress={() => handleDeleteResult(item.id)}
                     style={styles.deleteIcon}
                   >
-                    <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                    <Ionicons name="trash-outline" size={20} color="red" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -350,10 +350,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   dbContainer: { alignItems: "center", marginBottom: 24 },
-  dbNumber: { fontSize: 64, fontWeight: "bold", color: "#FF6B00" },
+  dbNumber: { fontSize: 64, fontWeight: "bold", color: "#00A2D9" },
   dbText: { fontSize: 16, color: "#6B7280" },
   primaryButton: {
-    backgroundColor: "#FF6B00",
+    backgroundColor: "#00A2D9",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   recordingButton: { backgroundColor: "#FF3B30" },
   secondaryButton: {
-    backgroundColor: "#000",
+    backgroundColor: "green",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   },
   resultTextContainer: { flex: 1 },
   resultAction: { fontSize: 16, fontWeight: "500" },
-  resultDbSmall: { fontSize: 14, color: "#FF6B00", fontWeight: "bold" },
+  resultDbSmall: { fontSize: 14, color: "#00A2D9", fontWeight: "bold" },
   resultRightSide: { flexDirection: "row", alignItems: "center" },
   playIcon: { paddingHorizontal: 10 },
   deleteIcon: { padding: 4 },
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
   },
   referenceText: { fontSize: 12, color: "#1E40AF", marginBottom: 4 },
   completeButton: {
-    backgroundColor: "#000",
+    backgroundColor: "#00A2D9",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

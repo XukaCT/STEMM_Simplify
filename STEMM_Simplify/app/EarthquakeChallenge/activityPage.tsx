@@ -218,6 +218,7 @@ export default function EarthquakeStructureActivity() {
                 <TextInput
                   style={styles.textInput}
                   placeholder="e.g., 0.5 G"
+                  keyboardType="numeric"
                   value={item.predicted}
                   onChangeText={(val) =>
                     updateDesign(item.id, "predicted", val)
@@ -256,32 +257,6 @@ export default function EarthquakeStructureActivity() {
         <TouchableOpacity style={styles.addDesignButton} onPress={addDesign}>
           <Text style={styles.addDesignText}>+ Add Design</Text>
         </TouchableOpacity>
-
-        {/* Info Box (Kept Blue) */}
-        <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>Understanding Earthquakes</Text>
-          <Text style={styles.infoText}>
-            Earthquakes cause ground vibrations that can collapse poorly
-            designed structures. Engineers design buildings to absorb and
-            distribute energy safely through base isolation, dampers, and
-            flexible structures.
-          </Text>
-          <View style={styles.strategyBox}>
-            <Text style={styles.strategyTitle}>Design Strategies:</Text>
-            <Text style={styles.strategyText}>
-              • More support pillars = better stability
-            </Text>
-            <Text style={styles.strategyText}>
-              • Accordion folds create flexible cushioning
-            </Text>
-            <Text style={styles.strategyText}>
-              • Lower center of mass = less tipping
-            </Text>
-            <Text style={styles.strategyText}>
-              • Wider base = more stable structure
-            </Text>
-          </View>
-        </View>
 
         {/* Complete Button */}
         <TouchableOpacity
@@ -344,7 +319,7 @@ const styles = StyleSheet.create({
 
   // CHANGED: Orange Start Button
   startButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -423,44 +398,10 @@ const styles = StyleSheet.create({
   addDesignText: { color: "#374151", fontSize: 14, fontWeight: "bold" },
 
   // Info Box (Kept Blue)
-  infoBox: {
-    backgroundColor: "#EFF6FF",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
-  },
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1E3A8A",
-    marginBottom: 8,
-  },
-  infoText: {
-    fontSize: 13,
-    color: "#1E3A8A",
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  strategyBox: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#DBEAFE",
-  },
-  strategyTitle: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: "#1E3A8A",
-    marginBottom: 8,
-  },
-  strategyText: { fontSize: 12, color: "#1E3A8A", marginBottom: 4 },
 
   // CHANGED: Orange Complete Button
   completeButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

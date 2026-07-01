@@ -18,7 +18,6 @@ export default function ReactionBoardActivity() {
   const params = useLocalSearchParams();
   const { startTime } = params;
 
-  // Global State
   const [activePhase, setActivePhase] = useState<1 | 2>(1);
   const [memberName, setMemberName] = useState("");
   const [records, setRecords] = useState<any[]>([]);
@@ -40,7 +39,6 @@ export default function ReactionBoardActivity() {
   >("idle");
   const [accuracy, setAccuracy] = useState(0);
 
-  // UPGRADE: 2D Animation Value for X and Y movement
   const targetPos = useRef(new Animated.ValueXY({ x: 120, y: 150 })).current;
   const currentTargetPos = useRef({ x: 120, y: 150 });
   const currentTouchPos = useRef({ x: 0, y: 0, isActive: false });
@@ -90,6 +88,20 @@ export default function ReactionBoardActivity() {
     }),
   ).current;
 
+  const switchPhase = (newPhase: 1 | 2) => {
+    if (newPhase === activePhase) return;
+
+    if (reactionTimeoutRef.current) clearTimeout(reactionTimeoutRef.current);
+    setReactionState("idle");
+
+    if (traceIntervalRef.current) clearInterval(traceIntervalRef.current);
+    if (traceTimerRef.current) clearTimeout(traceTimerRef.current);
+    targetPos.stopAnimation();
+    setTracingState("idle");
+
+    setActivePhase(newPhase);
+  };
+
   // --- PHASE 1 (REACTION) LOGIC ---
   const startReactionTest = () => {
     if (!memberName.trim()) {
@@ -134,9 +146,12 @@ export default function ReactionBoardActivity() {
 
   // --- PHASE 2 (TRACING) LOGIC ---
   const moveDotRandomly = () => {
-    const randomX = Math.random() * 220 + 20;
-    const randomY = Math.random() * 260 + 20;
-    const randomSpeed = Math.random() * 1000 + 500;
+    // Keep it safely inside the tracking box
+    const randomX = Math.random() * 200 + 20;
+    const randomY = Math.random() * 220 + 20;
+
+    // Slowed down the speed so it's humanly possible to track
+    const randomSpeed = Math.random() * 200 + 500;
 
     Animated.timing(targetPos, {
       toValue: { x: randomX, y: randomY },
@@ -176,7 +191,8 @@ export default function ReactionBoardActivity() {
         const dy = trueDotY - currentTouchPos.current.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance < 65) {
+        // Expanded hit radius from 65 to 90 for better touch forgiveness
+        if (distance < 90) {
           traceScore.current.hits += 1;
         }
       }
@@ -187,9 +203,12 @@ export default function ReactionBoardActivity() {
     targetPos.stopAnimation();
     if (traceIntervalRef.current) clearInterval(traceIntervalRef.current);
 
-    const finalAccuracy =
-      Math.round((traceScore.current.hits / traceScore.current.total) * 100) ||
-      0;
+    // Added a 1.15 multiplier to forgive touch-screen hardware lag
+    let finalAccuracy =
+      Math.round(
+        (traceScore.current.hits / traceScore.current.total) * 100 * 1.15,
+      ) || 0;
+    if (finalAccuracy > 100) finalAccuracy = 100; // Cap at 100%
 
     setAccuracy(finalAccuracy);
     setTracingState("result");
@@ -203,7 +222,7 @@ export default function ReactionBoardActivity() {
         name: memberName || "Unknown",
         phase: "Phase 2 - Tracing",
         score: `${accuracy}% Accuracy`,
-        color: "#FF5A00",
+        color: "#00A2D9",
       },
     ]);
     setTracingState("idle");
@@ -214,7 +233,6 @@ export default function ReactionBoardActivity() {
     router.push({
       pathname: "/ReactionChallenge/reactionResult",
       params: {
-        // SECURE ROUTING: encodeURIComponent to prevent string breaks
         activityData: encodeURIComponent(JSON.stringify(records)),
         startTime: startTime as string,
       },
@@ -240,7 +258,7 @@ export default function ReactionBoardActivity() {
             styles.tabButton,
             activePhase === 1 && styles.tabButtonActive,
           ]}
-          onPress={() => setActivePhase(1)}
+          onPress={() => switchPhase(1)}
         >
           <Zap
             size={16}
@@ -259,7 +277,7 @@ export default function ReactionBoardActivity() {
             styles.tabButton,
             activePhase === 2 && styles.tabButtonActive,
           ]}
-          onPress={() => setActivePhase(2)}
+          onPress={() => switchPhase(2)}
         >
           <Pencil
             size={16}
@@ -354,7 +372,7 @@ export default function ReactionBoardActivity() {
             >
               {reactionState === "idle" && (
                 <>
-                  <Zap size={48} color="#FF5A00" style={{ marginBottom: 12 }} />
+                  <Zap size={48} color="#00A2D9" style={{ marginBottom: 12 }} />
                   <Text style={styles.testTitle}>Ready to Test?</Text>
                   <Text style={styles.testSubtitle}>
                     Use your {handUsed.toLowerCase()} hand
@@ -381,7 +399,7 @@ export default function ReactionBoardActivity() {
                   <Text
                     style={[
                       styles.testTitle,
-                      { color: "#FF5A00", fontSize: 42 },
+                      { color: "#00A2D9", fontSize: 42 },
                     ]}
                   >
                     {reactionTime}ms
@@ -465,7 +483,7 @@ export default function ReactionBoardActivity() {
                 >
                   <Pencil
                     size={48}
-                    color="#FF5A00"
+                    color="#00A2D9"
                     style={{ marginBottom: 12 }}
                   />
                   <Text style={styles.testTitle}>Tracing Challenge</Text>
@@ -481,7 +499,7 @@ export default function ReactionBoardActivity() {
                   {...panResponder.panHandlers}
                 >
                   <Text style={styles.tracingHint}>
-                    Keep your finger on the orange dot!
+                    Keep your finger on the dot!
                   </Text>
                   <Animated.View
                     pointerEvents="none"
@@ -506,7 +524,7 @@ export default function ReactionBoardActivity() {
                   <Text
                     style={[
                       styles.testTitle,
-                      { color: "#FF5A00", fontSize: 56 },
+                      { color: "#00A2D9", fontSize: 56 },
                     ]}
                   >
                     {accuracy}%
@@ -639,7 +657,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
     marginHorizontal: 4,
   },
-  tabButtonActive: { backgroundColor: "#FF5A00" },
+  tabButtonActive: { backgroundColor: "#00A2D9" },
   tabText: { fontSize: 13, fontWeight: "bold", color: "#4B5563" },
   tabTextActive: { color: "#fff" },
   scrollContent: { padding: 16, backgroundColor: "#fff" },
@@ -692,7 +710,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
-  handButtonActive: { backgroundColor: "#FF5A00", borderColor: "#FF5A00" },
+  handButtonActive: { backgroundColor: "#00A2D9", borderColor: "#00A2D9" },
   handButtonText: { fontSize: 13, fontWeight: "500", color: "#4B5563" },
   handButtonTextActive: { color: "#fff" },
   testArea: {
@@ -732,12 +750,12 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     borderWidth: 6,
-    borderColor: "#FFEDD5",
+    borderColor: "#BFDBFE",
   },
   actionButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 16,
@@ -811,7 +829,7 @@ const styles = StyleSheet.create({
   bulletList: { gap: 6 },
   bulletItem: { fontSize: 11, color: "#1E3A8A", lineHeight: 16 },
   completeButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#00A2D9",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

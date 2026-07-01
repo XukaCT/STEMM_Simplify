@@ -13,8 +13,10 @@ import FeedCard from "../../components/video/FeedCard";
 import VideoModal from "../../components/video/videoModal";
 import { FeedItem, useMegaFeed } from "../../hooks/useMegaFeed";
 
+// Added "Earthquake" to the filter list so it shows up!
 const FILTERS = [
   "All Teams",
+  "Earthquake",
   "Parachute Drop",
   "Reaction Board",
   "Human Performance",
@@ -32,6 +34,7 @@ export default function VideoHubScreen() {
       ? feedItems
       : feedItems.filter((item) => {
           const filterMap: { [key: string]: string } = {
+            Earthquake: "earthquake",
             "Parachute Drop": "parachute",
             "Reaction Board": "reaction",
             "Human Performance": "human_performance",
@@ -50,41 +53,47 @@ export default function VideoHubScreen() {
       <TabHeader title="STEMM Hub" subtitle="Universal Activity Feed" />
 
       <View style={styles.container}>
-        <View style={{ height: 60 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterContainer}
-          >
-            {FILTERS.map((filter) => (
-              <TouchableOpacity
-                key={filter}
-                style={[
-                  styles.filterChip,
-                  activeFilter === filter && styles.filterChipActive,
-                ]}
-                onPress={() => setActiveFilter(filter)}
-              >
-                <Text
+        {/* MAIN SCROLL VIEW: Wrapping both filters and feed so it scrolls together */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          {/* HORIZONTAL FILTER BAR */}
+          <View style={{ height: 60 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filterContainer}
+            >
+              {FILTERS.map((filter) => (
+                <TouchableOpacity
+                  key={filter}
                   style={[
-                    styles.filterText,
-                    activeFilter === filter && styles.filterTextActive,
+                    styles.filterChip,
+                    activeFilter === filter && styles.filterChipActive,
                   ]}
+                  onPress={() => setActiveFilter(filter)}
                 >
-                  {filter}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#FF5A00" />
-            <Text style={styles.loadingText}>Fetching database...</Text>
+                  <Text
+                    style={[
+                      styles.filterText,
+                      activeFilter === filter && styles.filterTextActive,
+                    ]}
+                  >
+                    {filter}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
-        ) : (
-          <ScrollView showsVerticalScrollIndicator={false}>
+
+          {/* FEED CONTENT */}
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#FF5A00" />
+              <Text style={styles.loadingText}>Fetching database...</Text>
+            </View>
+          ) : (
             <View style={styles.feedContainer}>
               {filteredItems.length === 0 ? (
                 <Text style={styles.emptyText}>
@@ -100,12 +109,11 @@ export default function VideoHubScreen() {
                 ))
               )}
             </View>
-          </ScrollView>
-        )}
+          )}
+        </ScrollView>
       </View>
 
-      {/* THE FIX: We don't need to rebuild the object with `rawData` anymore! 
-          The new useMegaFeed hook puts everything directly on the selectedPost. */}
+      {/* MODAL */}
       <VideoModal
         selectedPost={selectedPost}
         onClose={() => setSelectedPost(null)}
@@ -131,7 +139,7 @@ const styles = StyleSheet.create({
     height: 36,
     justifyContent: "center",
   },
-  filterChipActive: { backgroundColor: "#FF5A00" },
+  filterChipActive: { backgroundColor: "#00A2D9" },
   filterText: { color: "#4b5563", fontSize: 14, fontWeight: "600" },
   filterTextActive: { color: "#ffffff" },
   feedContainer: {
@@ -140,7 +148,12 @@ const styles = StyleSheet.create({
     gap: 24,
     paddingTop: 10,
   },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: 200,
+  },
   loadingText: { marginTop: 12, color: "#6b7280", fontWeight: "500" },
   emptyText: {
     textAlign: "center",

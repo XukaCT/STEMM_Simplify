@@ -55,19 +55,23 @@ export default function Dashboard() {
         !completedIds.includes("5")
       )
         completedIds.push("5");
+      // ADDED: Detector for Earthquake Challenge
+      if (
+        (name.includes("earthquake") || activityName.includes("earthquake")) &&
+        !completedIds.includes("6")
+      )
+        completedIds.push("6");
     });
     return completedIds;
   }, [feedItems]);
 
-  // 3. NEW: Calculate Total Data Logs Instead of Points!
-  // This counts every single trial, fan design, and reaction test they saved.
+  // 3. Calculate Total Data Logs
   const totalDataLogs = useMemo(() => {
     return feedItems.reduce((sum, item) => {
       const resultsCount = item.results?.length || 0;
       const movementsCount = item.recordedMovements?.length || 0;
       const recordsCount = item.teamRecords?.length || 0;
 
-      // If it's an activity like Parachute that just has 1 final result, count it as 1
       const defaultCount =
         resultsCount === 0 && movementsCount === 0 && recordsCount === 0
           ? 1
@@ -77,8 +81,11 @@ export default function Dashboard() {
     }, 0);
   }, [feedItems]);
 
-  // 4. Calculate Percentage for the Progress Bar
-  const progressPercentage = (completedActivityIds.length / 5) * 100;
+  // 4. Calculate Percentage for the Progress Bar (UPDATED TO 6)
+  // Using Math.round to avoid messy decimals like 16.666%
+  const progressPercentage = Math.round(
+    (completedActivityIds.length / 6) * 100,
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
@@ -104,7 +111,7 @@ export default function Dashboard() {
                 </Text>
                 <Text style={styles.teamSubtitle}>{teamData?.grade}</Text>
 
-                {/* --- NEW PROGRESS BAR --- */}
+                {/* --- PROGRESS BAR --- */}
                 <View style={styles.progressContainer}>
                   <View style={styles.progressHeader}>
                     <Text style={styles.progressLabel}>Lab Completion</Text>
@@ -122,12 +129,13 @@ export default function Dashboard() {
                   </View>
                 </View>
 
-                {/* --- TWO CLEAN DATA BOXES INSTEAD OF 3 POINTS BOXES --- */}
+                {/* --- STAT BOXES --- */}
                 <View style={styles.statsRow}>
                   <View style={styles.statBox}>
                     <Text style={styles.statLabel}>Experiments</Text>
+                    {/* UPDATED TO / 6 */}
                     <Text style={styles.statValue}>
-                      {completedActivityIds.length} / 5
+                      {completedActivityIds.length} / 6
                     </Text>
                   </View>
 
@@ -180,7 +188,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  // NEW PROGRESS BAR STYLES
   progressContainer: {
     marginBottom: 20,
   },
@@ -213,7 +220,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 
-  // UPDATED 2-COLUMN STAT BOXES
   statsRow: { flexDirection: "row", justifyContent: "space-between", gap: 10 },
   statBox: {
     backgroundColor: "rgba(0,0,0,0.15)",

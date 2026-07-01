@@ -10,23 +10,6 @@ interface FeedCardProps {
 }
 
 export default function FeedCard({ item, onPress }: FeedCardProps) {
-  const renderStars = (rating: number) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <FontAwesome5
-          key={i}
-          name="star"
-          solid={i <= Math.floor(rating)}
-          size={14}
-          color={i <= Math.floor(rating) ? "#FF5A00" : "#E5E7EB"}
-          style={styles.starIcon}
-        />,
-      );
-    }
-    return stars;
-  };
-
   const renderCardTop = () => {
     if (item.activityType === "reaction") {
       return (
@@ -109,6 +92,7 @@ export default function FeedCard({ item, onPress }: FeedCardProps) {
       );
     }
 
+    // Default Video Thumbnail layout
     return (
       <View style={[styles.thumbnail, { backgroundColor: "#FF5A00" }]}>
         <View
@@ -166,7 +150,14 @@ export default function FeedCard({ item, onPress }: FeedCardProps) {
       {renderCardTop()}
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle}>{item.activityName}</Text>
-        <Text style={{ fontSize: 12, color: "#FF5A00", marginTop: 2 }}>
+        <Text
+          style={{
+            fontSize: 12,
+            color: "#00A2D9",
+            marginTop: 2,
+            fontWeight: "bold",
+          }}
+        >
           {item.collectionName
             .replace("_Challenge", "")
             .replace("_challenge", "")
@@ -174,20 +165,15 @@ export default function FeedCard({ item, onPress }: FeedCardProps) {
             .toUpperCase()}
         </Text>
 
-        <View style={styles.cardRatingRow}>
-          <View style={styles.ratingStars}>{renderStars(item.rating)}</View>
-          <Text style={styles.cardRatingText}>
-            {Number(item.rating).toFixed(1)}
-          </Text>
+        <View style={styles.cardPointsRow}>
           <Text
             style={{
-              marginLeft: "auto",
               fontSize: 13,
-              color: "#FF5A00",
+              color: "#00A2D9",
               fontWeight: "bold",
             }}
           >
-            View results →
+            View data logs →
           </Text>
         </View>
 
@@ -198,7 +184,9 @@ export default function FeedCard({ item, onPress }: FeedCardProps) {
           </View>
           <View style={styles.metaItem}>
             <FontAwesome5 name="map-marker-alt" size={12} color="#6b7280" />
-            <Text style={styles.metaText}>{item.location.split(",")}</Text>
+            <Text style={styles.metaText}>
+              {item.location ? item.location.split(",")[0] : "Local Device"}
+            </Text>
           </View>
         </View>
       </View>
@@ -281,15 +269,13 @@ const styles = StyleSheet.create({
   playIcon: { marginLeft: 4 },
   cardContent: { padding: 16 },
   cardTitle: { fontSize: 18, fontWeight: "bold", color: "#111827" },
-  cardRatingRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
-  cardRatingText: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: "#111",
-    marginLeft: 6,
+
+  cardPointsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 12,
   },
-  starIcon: { marginRight: 2 },
-  ratingStars: { flexDirection: "row", gap: 2 },
+
   metaRow: {
     flexDirection: "row",
     alignItems: "center",

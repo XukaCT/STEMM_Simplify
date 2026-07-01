@@ -140,40 +140,39 @@ export default function ParachuteAdjustment() {
             />
           )}
         </TouchableOpacity>
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.resultsButton}
+            activeOpacity={0.8}
+            onPress={() => {
+              if (!dropHeight || !fallTime) {
+                Alert.alert(
+                  "Missing Data",
+                  "Please enter height and time first.",
+                );
+                return;
+              }
+
+              // 2. PACK EVERYTHING FOR THE RESULTS PAGE
+              router.push({
+                pathname: "./result",
+                params: {
+                  heightNo: heightNo,
+                  timeNo: timeNo,
+                  heightWith: dropHeight,
+                  timeWith: fallTime,
+                  startTime: startTime,
+                  videoNoUri: videoNoUri, // From Page 1
+                  videoWithUri: videoUri, // From THIS Page (Page 2)
+                },
+              });
+            }}
+          >
+            <Text style={styles.resultsButtonText}>See Results</Text>
+            <Ionicons name="chevron-forward" size={20} color="#FFF" />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.resultsButton}
-          activeOpacity={0.8}
-          onPress={() => {
-            if (!dropHeight || !fallTime) {
-              Alert.alert(
-                "Missing Data",
-                "Please enter height and time first.",
-              );
-              return;
-            }
-
-            // 2. PACK EVERYTHING FOR THE RESULTS PAGE
-            router.push({
-              pathname: "./result",
-              params: {
-                heightNo: heightNo,
-                timeNo: timeNo,
-                heightWith: dropHeight,
-                timeWith: fallTime,
-                startTime: startTime,
-                videoNoUri: videoNoUri, // From Page 1
-                videoWithUri: videoUri, // From THIS Page (Page 2)
-              },
-            });
-          }}
-        >
-          <Text style={styles.resultsButtonText}>See Results</Text>
-          <Ionicons name="chevron-forward" size={20} color="#FFF" />
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }

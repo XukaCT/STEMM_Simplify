@@ -87,49 +87,6 @@ export default function VideoModal({
             </View>
           </View>
 
-          <View style={styles.sleekStatsRow}>
-            <View style={[styles.sleekStatBox, { backgroundColor: "#000" }]}>
-              <FontAwesome5 name="trophy" size={16} color="#FF5A00" />
-              <Text style={[styles.sleekStatValue, { color: "#fff" }]}>
-                {selectedPost.points}
-              </Text>
-              <Text style={[styles.sleekStatLabel, { color: "#9CA3AF" }]}>
-                POINTS
-              </Text>
-            </View>
-
-            <View style={[styles.sleekStatBox, { backgroundColor: "#FF5A00" }]}>
-              <FontAwesome5 name="medal" size={16} color="#fff" />
-              <Text style={[styles.sleekStatValue, { color: "#fff" }]}>
-                #{selectedPost.rank || "--"}
-              </Text>
-              <Text style={[styles.sleekStatLabel, { color: "#FFE6D5" }]}>
-                RANK
-              </Text>
-            </View>
-
-            <View
-              style={[
-                styles.sleekStatBox,
-                {
-                  backgroundColor: "#fff",
-                  borderWidth: 1,
-                  borderColor: "#E5E7EB",
-                },
-              ]}
-            >
-              <FontAwesome5 name="star" solid size={16} color="#FF5A00" />
-              <Text style={[styles.sleekStatValue, { color: "#111" }]}>
-                {selectedPost.rating
-                  ? Number(selectedPost.rating).toFixed(1)
-                  : "0.0"}
-              </Text>
-              <Text style={[styles.sleekStatLabel, { color: "#6B7280" }]}>
-                RATING
-              </Text>
-            </View>
-          </View>
-
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>RESULTS</Text>
             <ModalResults post={selectedPost} />
@@ -205,21 +162,6 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   modalMetaText: { fontSize: 14, color: "#6B7280" },
-  sleekStatsRow: { flexDirection: "row", gap: 12, marginBottom: 30 },
-  sleekStatBox: {
-    flex: 1,
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  sleekStatValue: {
-    fontSize: 20,
-    fontWeight: "900",
-    marginTop: 8,
-    marginBottom: 2,
-  },
-  sleekStatLabel: { fontSize: 10, fontWeight: "bold", letterSpacing: 0.5 },
   sectionContainer: { marginBottom: 20 },
   sectionTitle: {
     fontSize: 14,

@@ -1,5 +1,4 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Activity, Check, MessageSquare } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
@@ -18,13 +17,13 @@ import { GlobalStyles } from "../../constants/GlobalStyles";
 // 1. IMPORT OFFLINE STORAGE
 import { saveActivityToFeed } from "../../utils/localStore";
 
-const ACTIVITY_ID = "4";
-
 export default function EarthquakeResult() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
   const [designs, setDesigns] = useState<any[]>([]);
+  const [comments, setComments] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 2. LOAD DATA FROM ASYNC STORAGE
   useEffect(() => {
@@ -69,87 +68,8 @@ export default function EarthquakeResult() {
 
   const finalScore = calculatePoints();
 
-  const [rating, setRating] = useState(0);
-  const [comments, setComments] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [coordinate, setCoordinate] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [locationName, setLocationName] = useState<string | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
-
-  const [isMapVisible, setIsMapVisible] = useState(false);
-  const [tempCoordinate, setTempCoordinate] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-
-  const fetchAddressFromCoords = async (lat: number, lng: number) => {
-    try {
-      let geocodeArray = await Location.reverseGeocodeAsync({
-        latitude: lat,
-        longitude: lng,
-      });
-      if (geocodeArray && geocodeArray.length > 0) {
-        const place = geocodeArray[0];
-        const streetInfo = place.name || place.street;
-        const cityInfo = place.city || place.subregion || place.region;
-        setLocationName(
-          [streetInfo, cityInfo].filter(Boolean).join(", ") || "Unknown area",
-        );
-      } else {
-        setLocationName("Address not found");
-      }
-    } catch (error) {
-      setLocationError("Failed to fetch address");
-    }
-  };
-
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setLocationError("Permission denied");
-        return;
-      }
-
-      try {
-        let currentLocation = await Location.getCurrentPositionAsync({});
-        const initialCoords = {
-          latitude: currentLocation.coords.latitude,
-          longitude: currentLocation.coords.longitude,
-        };
-        setCoordinate(initialCoords);
-        await fetchAddressFromCoords(
-          initialCoords.latitude,
-          initialCoords.longitude,
-        );
-      } catch (error) {
-        setLocationError("Failed to fetch location");
-      }
-    })();
-  }, []);
-
-  const openMap = () => {
-    if (coordinate) setTempCoordinate(coordinate);
-    setIsMapVisible(true);
-  };
-
-  const confirmNewLocation = async () => {
-    setIsMapVisible(false);
-    if (tempCoordinate) {
-      setLocationName("Updating address...");
-      setCoordinate(tempCoordinate);
-      await fetchAddressFromCoords(
-        tempCoordinate.latitude,
-        tempCoordinate.longitude,
-      );
-    }
-  };
-
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
@@ -160,14 +80,13 @@ export default function EarthquakeResult() {
         activityType: "generic",
         title: "Structural Test Complete!",
         teamName: "My Team",
-        rating,
         comments,
         results: designs,
-        locationName: locationName || "Local Device",
         points: finalScore,
         createdAt: new Date().toISOString(),
         heroLabel: "STRUCTURES",
         heroStat: `${designs.length} TESTED`,
+        locationName: "Local Device",
       };
 
       await saveActivityToFeed(submissionData);
@@ -201,6 +120,7 @@ export default function EarthquakeResult() {
           </Text>
         </View>
 
+        {/* RESULTS SUMMARY CARD */}
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
             <Activity size={20} color="#FF5A00" />
@@ -211,6 +131,7 @@ export default function EarthquakeResult() {
           <EarthquakeDesignList designs={designs} />
         </View>
 
+        {/* COMMENTS CARD */}
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
             <MessageSquare size={20} color="#FF5A00" />
@@ -231,12 +152,13 @@ export default function EarthquakeResult() {
           />
         </View>
 
+        {/* SUBMIT BUTTON */}
         <TouchableOpacity
           style={[
             GlobalStyles.submitButton,
-            (rating === 0 || isSubmitting) && GlobalStyles.submitButtonDisabled,
+            isSubmitting && GlobalStyles.submitButtonDisabled,
           ]}
-          disabled={rating === 0 || isSubmitting}
+          disabled={isSubmitting}
           onPress={handleSubmit}
         >
           {isSubmitting ? (

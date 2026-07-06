@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Video as ExpoVideo, ResizeMode } from "expo-av"; // ADDED VIDEO IMPORT
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -23,6 +24,7 @@ interface ActivityPrepScreenProps {
   instructions: string[];
   nextRoute: any;
   diagram?: React.ReactNode;
+  videoSource?: any; // NEW OPTIONAL PROP FOR VIDEO
   knowledgeBlocks?: KnowledgeBlock[];
 }
 
@@ -34,6 +36,7 @@ export default function ActivityPrepScreen({
   instructions,
   nextRoute,
   diagram,
+  videoSource, // EXTRACTED HERE
   knowledgeBlocks,
 }: ActivityPrepScreenProps) {
   const router = useRouter();
@@ -169,6 +172,26 @@ export default function ActivityPrepScreen({
               <View style={styles.placeholderDiagram}>
                 <Ionicons name="construct-outline" size={48} color="#CCC" />
                 <Text style={styles.placeholderText}>Diagram coming soon.</Text>
+              </View>
+            )}
+
+            {/* --- NEW VIDEO DEMONSTRATION SECTION --- */}
+            {videoSource && (
+              <View style={styles.videoSectionContainer}>
+                <Text style={styles.sectionTitle}>Video Demonstration</Text>
+                <View style={styles.videoContainer}>
+                  <ExpoVideo
+                    source={
+                      typeof videoSource === "string"
+                        ? { uri: videoSource }
+                        : videoSource
+                    }
+                    style={styles.videoPlayer}
+                    useNativeControls
+                    resizeMode={ResizeMode.CONTAIN}
+                    shouldPlay={false} // Paused by default
+                  />
+                </View>
               </View>
             )}
           </View>
@@ -327,6 +350,27 @@ const styles = StyleSheet.create({
     marginTop: 10,
     lineHeight: 20,
   },
+
+  // NEW VIDEO DEMONSTRATION STYLES
+  videoSectionContainer: {
+    marginTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: "#F3F4F6",
+    paddingTop: 20,
+  },
+  videoContainer: {
+    width: "100%",
+    height: 220,
+    backgroundColor: "#000",
+    borderRadius: 12,
+    overflow: "hidden",
+    marginTop: 12,
+  },
+  videoPlayer: {
+    width: "100%",
+    height: "100%",
+  },
+
   knowledgeBlock: { marginBottom: 20 },
   knowledgeTitle: {
     fontSize: 14,
@@ -355,7 +399,7 @@ const styles = StyleSheet.create({
     height: 56,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#00A2D9 ",
+    shadowColor: "#00A2D9",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,

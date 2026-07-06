@@ -68,7 +68,7 @@ export default function HumanPerformanceResult() {
     try {
       const submissionData = {
         collectionName: "human_performance_challenge",
-        activityName: "Human Performance Lab",
+        activityName: "Human Movement Analysis",
         activityType: "generic",
         title: "Motor Control Logged!",
         teamName: "My Team",

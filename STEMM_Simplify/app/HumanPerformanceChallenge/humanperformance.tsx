@@ -121,10 +121,11 @@ const CodedHumanPerfDiagram = () => (
 export default function HumanPerformanceChallenge() {
   return (
     <ActivityPrepScreen
-      title="Human Performance Lab"
+      title="Human Movement Analysis"
       subtitle="Health + Biomechanics"
       overview="Students use the phone's built-in accelerometer to measure the stability and smoothness of physical movements like stretching or squatting. They evaluate biomechanics and center of gravity."
       diagram={<CodedHumanPerfDiagram />}
+      videoSource={require("../../assets/videos/human_lab.mp4")}
       equipmentList={[
         "Mobile phone with STEMM Lab app",
         "Clear space to move safely",

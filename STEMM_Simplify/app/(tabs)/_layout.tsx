@@ -7,7 +7,7 @@ export default function RootLayout() {
         // Styling the bottom tab bar
         // @ts-ignore
         safeAreaInsets: { top: 0, bottom: 0 },
-        sceneContainerStyle: { backgroundColor: "#000000" },
+        sceneContainerStyle: { backgroundColor: "#040C15" },
         tabBarStyle: {
           backgroundColor: "#040C15",
           borderTopWidth: 0,

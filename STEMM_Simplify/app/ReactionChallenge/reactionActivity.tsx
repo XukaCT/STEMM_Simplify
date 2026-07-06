@@ -1,8 +1,10 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, CheckCircle, Pencil, Zap } from "lucide-react-native";
+import { ArrowLeft, CheckCircle, Pencil, X, Zap } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Dimensions,
+  Modal,
   PanResponder,
   ScrollView,
   StyleSheet,
@@ -13,11 +15,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
 export default function ReactionBoardActivity() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { startTime } = params;
 
+  // Global State
   const [activePhase, setActivePhase] = useState<1 | 2>(1);
   const [memberName, setMemberName] = useState("");
   const [records, setRecords] = useState<any[]>([]);
@@ -26,10 +31,15 @@ export default function ReactionBoardActivity() {
   const [handUsed, setHandUsed] = useState<"Dominant" | "Non-Dominant">(
     "Dominant",
   );
-  const [reactionState, setReactionState] = useState<
-    "idle" | "waiting" | "ready" | "result"
-  >("idle");
+  const [reactionState, setReactionState] = useState<"idle" | "result">("idle");
   const [reactionTime, setReactionTime] = useState(0);
+
+  // New Full-Screen Trial State
+  const [isFullScreenTest, setIsFullScreenTest] = useState(false);
+  const [trialScores, setTrialScores] = useState<number[]>([]);
+  const [boxPos, setBoxPos] = useState<{ top: number; left: number } | null>(
+    null,
+  );
   const reactionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reactionStartTime = useRef(0);
 
@@ -93,6 +103,7 @@ export default function ReactionBoardActivity() {
 
     if (reactionTimeoutRef.current) clearTimeout(reactionTimeoutRef.current);
     setReactionState("idle");
+    setIsFullScreenTest(false);
 
     if (traceIntervalRef.current) clearInterval(traceIntervalRef.current);
     if (traceTimerRef.current) clearTimeout(traceTimerRef.current);
@@ -105,27 +116,45 @@ export default function ReactionBoardActivity() {
   // --- PHASE 1 (REACTION) LOGIC ---
   const startReactionTest = () => {
     if (!memberName.trim()) {
-      alert("Please enter a team member name first!");
+      alert("Please enter a nickname first!");
       return;
     }
-    setReactionState("waiting");
-    const randomDelay = Math.floor(Math.random() * 2500) + 1500;
-
-    reactionTimeoutRef.current = setTimeout(() => {
-      setReactionState("ready");
-      reactionStartTime.current = Date.now();
-    }, randomDelay);
+    setReactionTime(0);
+    setTrialScores([]);
+    setIsFullScreenTest(true);
+    scheduleNextBox();
   };
 
-  const handleReactionTap = () => {
-    if (reactionState === "waiting") {
-      if (reactionTimeoutRef.current) clearTimeout(reactionTimeoutRef.current);
-      alert("Too early! Wait for the green screen.");
-      setReactionState("idle");
-    } else if (reactionState === "ready") {
-      const timeTaken = Date.now() - reactionStartTime.current;
-      setReactionTime(timeTaken);
+  const scheduleNextBox = () => {
+    setBoxPos(null); // Hide the box to show "Get Ready..."
+    // Wait between 0.5s and 2.0s
+    const delay = Math.floor(Math.random() * 1500) + 500;
+
+    reactionTimeoutRef.current = setTimeout(() => {
+      // Calculate random coordinates keeping the 60x60 box inside screen bounds safely
+      const top = Math.random() * (SCREEN_HEIGHT - 250) + 100;
+      const left = Math.random() * (SCREEN_WIDTH - 80) + 10;
+
+      setBoxPos({ top, left });
+      reactionStartTime.current = Date.now();
+    }, delay);
+  };
+
+  const handleBoxTap = () => {
+    const timeTaken = Date.now() - reactionStartTime.current;
+    const newScores = [...trialScores, timeTaken];
+    setTrialScores(newScores);
+
+    if (newScores.length >= 5) {
+      // Calculate the average of the 5 trials
+      const sum = newScores.reduce((a, b) => a + b, 0);
+      const avg = Math.round(sum / 5);
+
+      setReactionTime(avg);
+      setIsFullScreenTest(false);
       setReactionState("result");
+    } else {
+      scheduleNextBox();
     }
   };
 
@@ -146,12 +175,9 @@ export default function ReactionBoardActivity() {
 
   // --- PHASE 2 (TRACING) LOGIC ---
   const moveDotRandomly = () => {
-    // Keep it safely inside the tracking box
     const randomX = Math.random() * 200 + 20;
     const randomY = Math.random() * 220 + 20;
-
-    // Slowed down the speed so it's humanly possible to track
-    const randomSpeed = Math.random() * 200 + 500;
+    const randomSpeed = Math.random() * 1500 + 1000;
 
     Animated.timing(targetPos, {
       toValue: { x: randomX, y: randomY },
@@ -166,7 +192,7 @@ export default function ReactionBoardActivity() {
 
   const startTracingTest = () => {
     if (!memberName.trim()) {
-      alert("Please enter a team member name first!");
+      alert("Please enter a nickname first!");
       return;
     }
 
@@ -191,7 +217,6 @@ export default function ReactionBoardActivity() {
         const dy = trueDotY - currentTouchPos.current.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Expanded hit radius from 65 to 90 for better touch forgiveness
         if (distance < 90) {
           traceScore.current.hits += 1;
         }
@@ -203,7 +228,6 @@ export default function ReactionBoardActivity() {
     targetPos.stopAnimation();
     if (traceIntervalRef.current) clearInterval(traceIntervalRef.current);
 
-    // Added a 1.15 multiplier to forgive touch-screen hardware lag
     let finalAccuracy =
       Math.round(
         (traceScore.current.hits / traceScore.current.total) * 100 * 1.15,
@@ -304,12 +328,13 @@ export default function ReactionBoardActivity() {
               <Text style={styles.infoBannerTitle}>Phase 1: Swap Hands</Text>
               <Text style={styles.infoBannerText}>
                 Test your reaction speed. Try it with your dominant hand, then
-                repeat using your non-dominant hand. Compare the results.
+                repeat using your non-dominant hand. The test will average your
+                score over 5 trials.
               </Text>
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.inputLabel}>Team Member Name</Text>
+              <Text style={styles.inputLabel}>Nickname</Text>
               <TextInput
                 style={styles.textInput}
                 placeholder="e.g. John"
@@ -355,18 +380,13 @@ export default function ReactionBoardActivity() {
               </View>
             </View>
 
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={handleReactionTap}
+            {/* MINIMIZED UI - Actual test takes place in Full Screen Modal */}
+            <View
               style={[
                 styles.testArea,
-                reactionState === "waiting" && {
-                  backgroundColor: "#DC2626",
-                  borderColor: "#B91C1C",
-                },
-                reactionState === "ready" && {
-                  backgroundColor: "#10B981",
-                  borderColor: "#059669",
+                reactionState === "result" && {
+                  backgroundColor: "#E0F2FE",
+                  borderColor: "#BAE6FD",
                 },
               ]}
             >
@@ -380,20 +400,6 @@ export default function ReactionBoardActivity() {
                 </>
               )}
 
-              {reactionState === "waiting" && (
-                <Text style={[styles.testTitle, { color: "#fff" }]}>
-                  Wait for green...
-                </Text>
-              )}
-
-              {reactionState === "ready" && (
-                <Text
-                  style={[styles.testTitle, { color: "#fff", fontSize: 32 }]}
-                >
-                  TAP NOW!
-                </Text>
-              )}
-
               {reactionState === "result" && (
                 <>
                   <Text
@@ -404,10 +410,12 @@ export default function ReactionBoardActivity() {
                   >
                     {reactionTime}ms
                   </Text>
-                  <Text style={styles.testSubtitle}>Great job!</Text>
+                  <Text style={styles.testSubtitle}>
+                    Average over 5 touches
+                  </Text>
                 </>
               )}
-            </TouchableOpacity>
+            </View>
 
             {reactionState === "idle" ? (
               <TouchableOpacity
@@ -453,7 +461,7 @@ export default function ReactionBoardActivity() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.inputLabel}>Team Member Name</Text>
+              <Text style={styles.inputLabel}>Nickname</Text>
               <TextInput
                 style={styles.textInput}
                 placeholder="e.g. Jane"
@@ -630,6 +638,44 @@ export default function ReactionBoardActivity() {
           <Text style={styles.completeButtonText}>Complete Activity</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* FULL SCREEN REACTION MODAL */}
+      <Modal
+        visible={isFullScreenTest}
+        animationType="fade"
+        transparent={false}
+        onRequestClose={() => setIsFullScreenTest(false)}
+      >
+        <SafeAreaView style={styles.fullScreenModal}>
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => {
+              if (reactionTimeoutRef.current)
+                clearTimeout(reactionTimeoutRef.current);
+              setIsFullScreenTest(false);
+              setReactionState("idle");
+            }}
+          >
+            <X size={32} color="#FFF" />
+          </TouchableOpacity>
+
+          <Text style={styles.modalCounter}>
+            Trial {trialScores.length + 1} of 5
+          </Text>
+
+          {!boxPos ? (
+            <View style={styles.modalWaitingContainer}>
+              <Text style={styles.modalWaitingText}>Get Ready...</Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleBoxTap}
+              style={[styles.movingBox, { top: boxPos.top, left: boxPos.left }]}
+            />
+          )}
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -722,7 +768,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
-    minHeight: 250,
+    minHeight: 150, // Reduced height as the real test is full screen
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -838,4 +884,43 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   completeButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+
+  // --- FULL SCREEN MODAL STYLES ---
+  fullScreenModal: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+  modalCloseButton: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+    zIndex: 10,
+    padding: 8,
+  },
+  modalCounter: {
+    color: "#FFF",
+    textAlign: "center",
+    marginTop: 50,
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  modalWaitingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalWaitingText: {
+    color: "#FFF",
+    fontSize: 28,
+    fontWeight: "600",
+  },
+  movingBox: {
+    position: "absolute",
+    width: 60,
+    height: 60,
+    backgroundColor: "#FF5A00",
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#FFF",
+  },
 });

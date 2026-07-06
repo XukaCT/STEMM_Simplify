@@ -11,7 +11,7 @@ export const GlobalStyles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#10B981",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
@@ -70,14 +70,14 @@ export const GlobalStyles = StyleSheet.create({
 
   // --- Buttons ---
   submitButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#10B981",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 16,
     borderRadius: 12,
   },
-  submitButtonDisabled: { backgroundColor: "#FFB088" },
+  submitButtonDisabled: { backgroundColor: "#F3F4F6" },
   submitButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
   footerText: {
     textAlign: "center",
@@ -100,7 +100,7 @@ export const GlobalStyles = StyleSheet.create({
   modalCancelButton: { padding: 4 },
   modalTitle: { fontSize: 18, fontWeight: "bold", color: "#111" },
   modalConfirmButton: {
-    backgroundColor: "#FF5A00",
+    backgroundColor: "#10B981",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,

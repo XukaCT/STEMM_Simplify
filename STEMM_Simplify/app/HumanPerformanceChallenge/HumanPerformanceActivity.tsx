@@ -108,7 +108,7 @@ export default function HumanPerformanceActivity() {
         >
           <ArrowLeft color="#fff" size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Human Performance Lab</Text>
+        <Text style={styles.headerTitle}>Human Movement Analysis</Text>
         <Text style={styles.headerSubtitle}>Medical Science</Text>
       </View>
 

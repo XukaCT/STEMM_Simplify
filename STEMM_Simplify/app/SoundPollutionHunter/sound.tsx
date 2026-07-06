@@ -74,13 +74,8 @@ const CodedSoundDiagram = () => (
     <View
       style={{ position: "absolute", top: 60, right: 60, alignItems: "center" }}
     >
-      <Ionicons name="volume-high" size={40} color="#8B5CF6" />
-      <Ionicons
-        name="book"
-        size={50}
-        color="#0284C7"
-        style={{ marginTop: 5 }}
-      />
+      <Ionicons name="volume-high" size={30} color="#8B5CF6" />
+      <Ionicons name="key" size={40} color="#0284C7" style={{ marginTop: 5 }} />
       <Text
         style={{
           fontSize: 10,
@@ -89,7 +84,7 @@ const CodedSoundDiagram = () => (
           fontWeight: "bold",
         }}
       >
-        Noisy Action
+        Noisy source
       </Text>
     </View>
   </View>
@@ -102,16 +97,17 @@ export default function SoundChallenge() {
       subtitle="Engineering + Physics / Env"
       overview="Students investigate noise pollution by measuring the sound intensity of various actions at different distances. They will analyze how distance affects sound and understand the health impacts of high decibel levels."
       diagram={<CodedSoundDiagram />}
+      videoSource={require("../../assets/videos/sound_pollution.mp4")}
       equipmentList={[
         "Mobile phone with STEMM Lab app",
-        "Assorted noisy objects (keys, books, pens)",
+        "Assorted noisy sources (keys, books, pens)",
         "Measuring tape or ruler",
         "Quiet room to establish a baseline",
       ]}
       instructions={[
         "Ensure the room is quiet to establish a baseline.",
         "Drop an object from a fixed height and measure the sound (dB).",
-        "Move the phone exactly 1 meter away and repeat.",
+        "Move the phone exactly 10cm away and repeat.",
         "Test different actions (e.g., dropping keys, clapping).",
         "Save the results and analyze the data.",
       ]}

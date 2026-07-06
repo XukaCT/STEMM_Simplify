@@ -112,7 +112,7 @@ export default function ResultScreen() {
 
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
-            <Ionicons name="cloud-upload-outline" size={20} color="#FF5A00" />
+            <Ionicons name="cloud-upload-outline" size={20} color="#10B981" />
             <Text style={GlobalStyles.cardTitle}>Recorded Clips</Text>
           </View>
           <SoundRecordingList results={results} />
@@ -120,7 +120,7 @@ export default function ResultScreen() {
 
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
-            <Ionicons name="chatbubble-outline" size={20} color="#FF5A00" />
+            <Ionicons name="chatbubble-outline" size={20} color="#10B981" />
             <Text style={GlobalStyles.cardTitle}>Outcome Comments</Text>
           </View>
           <Text style={GlobalStyles.commentsLabel}>

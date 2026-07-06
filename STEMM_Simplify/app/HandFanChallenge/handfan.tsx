@@ -128,6 +128,7 @@ export default function HandFanChallenge() {
       subtitle="Physics - Air Movement"
       overview="Students design and test various paper hand fans to see which structure moves the most air. By measuring the bend angle of a paper target, they learn about air pressure, structural integrity, and aerodynamics."
       diagram={<CodedFanDiagram />}
+      videoSource={require("../../assets/videos/handfan.mp4")}
       equipmentList={[
         "Mobile phone with STEMM Lab app",
         "Paper, cardboard, or plastic sheets",

@@ -105,7 +105,7 @@ export default function ReactionResult() {
 
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
-            <Zap size={20} color="#FF5A00" />
+            <Zap size={20} color="#10B981" />
             <Text style={GlobalStyles.cardTitle}>Team Results Summary</Text>
           </View>
           <ReactionTimeList records={records} />
@@ -113,7 +113,7 @@ export default function ReactionResult() {
 
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
-            <MessageSquare size={20} color="#FF5A00" />
+            <MessageSquare size={20} color="#10B981" />
             <Text style={GlobalStyles.cardTitle}>Outcome Comments</Text>
           </View>
           <Text style={GlobalStyles.commentsLabel}>

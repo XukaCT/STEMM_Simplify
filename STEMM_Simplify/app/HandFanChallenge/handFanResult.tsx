@@ -132,7 +132,7 @@ export default function HandFanResult() {
 
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
-            <VideoIcon size={20} color="#FF6B00" />
+            <VideoIcon size={20} color="#10B981" />
             <Text style={GlobalStyles.cardTitle}>Final Test Log</Text>
           </View>
 
@@ -175,7 +175,7 @@ export default function HandFanResult() {
 
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
-            <MessageSquare size={20} color="#FF6B00" />
+            <MessageSquare size={20} color="#10B981" />
             <Text style={GlobalStyles.cardTitle}>Outcome Comments</Text>
           </View>
           <Text style={GlobalStyles.commentsLabel}>
@@ -196,7 +196,7 @@ export default function HandFanResult() {
         <TouchableOpacity
           style={[
             GlobalStyles.submitButton,
-            { backgroundColor: "#FF6B00" },
+            { backgroundColor: "#10B981" },
             isSubmitting && GlobalStyles.submitButtonDisabled,
           ]}
           disabled={isSubmitting}

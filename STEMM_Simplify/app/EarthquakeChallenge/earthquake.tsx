@@ -143,6 +143,7 @@ export default function EarthquakeChallenge() {
       subtitle="Engineering & Physics"
       overview="Students design structures to withstand vibration, simulating earthquakes. They will test how different pillar shapes and materials absorb kinetic energy."
       diagram={<CodedEarthquakeDiagram />}
+      videoSource={require("../../assets/videos/earthquake_activity.mp4")}
       equipmentList={[
         "Cardboard, paper, scissors, sticky tape",
         "Plastic/paper cups",

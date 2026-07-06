@@ -116,6 +116,7 @@ export default function ParachuteChallenge() {
       subtitle="Engineering + Physics"
       overview="Students design, build, and test a parachute to protect an egg from breaking during a drop. Measure fall time, capture slow-motion impact, and analyze the physics of air resistance."
       diagram={<CodedParachuteDiagram />}
+      videoSource={require("../../assets/videos/parachute.mp4")}
       equipmentList={[
         "Mobile phone with STEMM Lab app",
         "Small toy (e.g., army toy soldier)",

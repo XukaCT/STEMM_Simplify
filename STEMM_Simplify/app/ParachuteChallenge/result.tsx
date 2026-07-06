@@ -1,11 +1,6 @@
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-  Check,
-  MessageSquare,
-  Timer,
-  Video
-} from "lucide-react-native";
+import { Check, MessageSquare, Timer, Video } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -143,7 +138,7 @@ export default function ParachuteResults() {
 
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
-            <Timer size={20} color="#FF5A00" />
+            <Timer size={20} color="#10B981" />
             <Text style={GlobalStyles.cardTitle}>Drop Comparison</Text>
           </View>
           <DropComparison
@@ -160,7 +155,7 @@ export default function ParachuteResults() {
 
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
-            <Video size={20} color="#FF5A00" />
+            <Video size={20} color="#10B981" />
             <Text style={GlobalStyles.cardTitle}>
               Experiment Videos{" "}
               <Text
@@ -219,7 +214,7 @@ export default function ParachuteResults() {
 
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
-            <MessageSquare size={20} color="#FF5A00" />
+            <MessageSquare size={20} color="#10B981" />
             <Text style={GlobalStyles.cardTitle}>Outcome Comments</Text>
           </View>
           <Text style={GlobalStyles.commentsLabel}>

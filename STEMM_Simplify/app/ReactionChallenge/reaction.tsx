@@ -102,6 +102,7 @@ export default function ReactionChallenge() {
       subtitle="Health + Medical Science"
       overview="Students test their nervous system's response times to visual and auditory cues. They will compare their dominant versus non-dominant hands to see how brain processing speeds vary."
       diagram={<CodedReactionDiagram />}
+      videoSource={require("../../assets/videos/reaction.mp4")}
       equipmentList={[
         "Mobile phone with STEMM Lab app",
         "A quiet environment for auditory testing",

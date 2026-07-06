@@ -1,107 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Text, View } from "react-native";
 import ActivityPrepScreen from "../../components/shared/ActivityPrepScreen";
-
-const CodedReactionDiagram = () => (
-  <View
-    style={{
-      height: 280,
-      width: "100%",
-      backgroundColor: "#F9FAFB",
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: "#E5E7EB",
-      position: "relative",
-    }}
-  >
-    {/* Brain */}
-    <View
-      style={{ position: "absolute", top: 40, left: 40, alignItems: "center" }}
-    >
-      <Ionicons name="hardware-chip" size={60} color="#EAB308" />
-      <Text style={{ fontSize: 12, fontWeight: "bold", color: "#6B7280" }}>
-        Brain Process
-      </Text>
-    </View>
-    {/* Nerve Path */}
-    <View
-      style={{
-        position: "absolute",
-        top: 80,
-        left: 100,
-        width: 80,
-        borderBottomWidth: 3,
-        borderStyle: "dashed",
-        borderColor: "#9CA3AF",
-        transform: [{ rotate: "25deg" }],
-      }}
-    />
-    <Ionicons
-      name="flash"
-      size={20}
-      color="#FF5A00"
-      style={{ position: "absolute", top: 80, left: 130 }}
-    />
-    {/* Hand Tapping */}
-    <View
-      style={{
-        position: "absolute",
-        top: 120,
-        right: 50,
-        alignItems: "center",
-      }}
-    >
-      <Ionicons
-        name="hand-left"
-        size={60}
-        color="#D97757"
-        style={{ transform: [{ rotate: "180deg" }] }}
-      />
-      <Text
-        style={{
-          fontSize: 12,
-          fontWeight: "bold",
-          color: "#6B7280",
-          marginTop: 5,
-        }}
-      >
-        Motor Response
-      </Text>
-    </View>
-    {/* Phone Target */}
-    <View
-      style={{
-        position: "absolute",
-        bottom: 20,
-        right: 50,
-        alignItems: "center",
-      }}
-    >
-      <Ionicons name="phone-portrait" size={80} color="#111" />
-      <View
-        style={{
-          position: "absolute",
-          top: 20,
-          width: 30,
-          height: 30,
-          backgroundColor: "#EF4444",
-          borderRadius: 15,
-          borderWidth: 2,
-          borderColor: "#fff",
-        }}
-      />
-    </View>
-  </View>
-);
 
 export default function ReactionChallenge() {
   return (
     <ActivityPrepScreen
-      title="Reaction Board"
+      title="Human Reaction Challenge"
       subtitle="Health + Medical Science"
       overview="Students test their nervous system's response times to visual and auditory cues. They will compare their dominant versus non-dominant hands to see how brain processing speeds vary."
-      diagram={<CodedReactionDiagram />}
       videoSource={require("../../assets/videos/reaction.mp4")}
       equipmentList={[
         "Mobile phone with STEMM Lab app",
@@ -141,6 +46,12 @@ export default function ReactionChallenge() {
           details: [
             "• Science: ACSIS130 (Collecting and analysing data)",
             "• Health: ACPPS057 (Understanding physical performance)",
+          ],
+        },
+        {
+          title: "Medical Use",
+          details: [
+            "This assessment is being used to measure reaction time and response speed during a simple board-based task. It may help evaluate visual-motor coordination, psychomotor function, and any delays in responding to stimuli. The results can support clinical or rehabilitation assessment and help track changes over time.",
           ],
         },
       ]}

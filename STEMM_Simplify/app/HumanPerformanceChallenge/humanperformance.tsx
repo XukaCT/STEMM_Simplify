@@ -159,6 +159,12 @@ export default function HumanPerformanceChallenge() {
             "Sports scientists use this exact technology to analyze athletes' gaits, improve performance, and prevent injuries.",
           ],
         },
+        {
+          title: "Medical Use",
+          details: [
+            "It may help identify motor control issues, tremor, stiffness, or reduced coordination that can affect hand function. The results can support rehabilitation planning and track improvement over time.",
+          ],
+        },
       ]}
       nextRoute="/HumanPerformanceChallenge/HumanPerformanceActivity"
     />

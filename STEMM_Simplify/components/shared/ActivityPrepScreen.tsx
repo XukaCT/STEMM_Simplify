@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Video as ExpoVideo, ResizeMode } from "expo-av"; // ADDED VIDEO IMPORT
+import { Audio, Video as ExpoVideo, ResizeMode } from "expo-av";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Image, // ADDED IMAGE IMPORT
   ScrollView,
   StyleSheet,
   Text,
@@ -24,7 +25,8 @@ interface ActivityPrepScreenProps {
   instructions: string[];
   nextRoute: any;
   diagram?: React.ReactNode;
-  videoSource?: any; // NEW OPTIONAL PROP FOR VIDEO
+  videoSource?: any;
+  imageSource?: any; // NEW OPTIONAL PROP FOR IMAGES
   knowledgeBlocks?: KnowledgeBlock[];
 }
 
@@ -36,7 +38,8 @@ export default function ActivityPrepScreen({
   instructions,
   nextRoute,
   diagram,
-  videoSource, // EXTRACTED HERE
+  videoSource,
+  imageSource, // EXTRACTED HERE
   knowledgeBlocks,
 }: ActivityPrepScreenProps) {
   const router = useRouter();
@@ -44,6 +47,22 @@ export default function ActivityPrepScreen({
   const [checkedItems, setCheckedItems] = useState(
     new Array(equipmentList.length).fill(false),
   );
+
+  useEffect(() => {
+    const forceAudioPlayback = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true, // This is the magic line for iOS silent mode
+          allowsRecordingIOS: false,
+          staysActiveInBackground: false,
+          playThroughEarpieceAndroid: false, // Use this instead if you want to be thorough
+        });
+      } catch (error) {
+        console.error("Failed to set audio mode:", error);
+      }
+    };
+    forceAudioPlayback();
+  }, []);
 
   const toggleCheckbox = (index: number) => {
     const updated = [...checkedItems];
@@ -175,22 +194,36 @@ export default function ActivityPrepScreen({
               </View>
             )}
 
-            {/* --- NEW VIDEO DEMONSTRATION SECTION --- */}
-            {videoSource && (
+            {/* --- UPDATED MEDIA DEMONSTRATION SECTION --- */}
+            {(videoSource || imageSource) && (
               <View style={styles.videoSectionContainer}>
-                <Text style={styles.sectionTitle}>Video Demonstration</Text>
+                <Text style={styles.sectionTitle}>
+                  {videoSource ? "Video Demonstration" : "Visual Demonstration"}
+                </Text>
                 <View style={styles.videoContainer}>
-                  <ExpoVideo
-                    source={
-                      typeof videoSource === "string"
-                        ? { uri: videoSource }
-                        : videoSource
-                    }
-                    style={styles.videoPlayer}
-                    useNativeControls
-                    resizeMode={ResizeMode.CONTAIN}
-                    shouldPlay={false} // Paused by default
-                  />
+                  {videoSource ? (
+                    <ExpoVideo
+                      source={
+                        typeof videoSource === "string"
+                          ? { uri: videoSource }
+                          : videoSource
+                      }
+                      style={styles.mediaPlayer}
+                      useNativeControls
+                      resizeMode={ResizeMode.CONTAIN}
+                      shouldPlay={false}
+                    />
+                  ) : (
+                    <Image
+                      source={
+                        typeof imageSource === "string"
+                          ? { uri: imageSource }
+                          : imageSource
+                      }
+                      style={styles.mediaPlayer}
+                      resizeMode="contain"
+                    />
+                  )}
                 </View>
               </View>
             )}
@@ -256,7 +289,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 16,
   },
-
   tabBar: {
     flexDirection: "row",
     backgroundColor: "#000",
@@ -272,7 +304,6 @@ const styles = StyleSheet.create({
   tabButtonActive: { borderBottomColor: "#00A2D9" },
   tabText: { color: "#9CA3AF", fontSize: 14, fontWeight: "bold" },
   tabTextActive: { color: "#00A2D9" },
-
   scrollContent: {
     padding: 20,
     paddingBottom: 120,
@@ -334,7 +365,6 @@ const styles = StyleSheet.create({
   },
   numberText: { color: "#FFF", fontSize: 12, fontWeight: "bold" },
   stepText: { flex: 1, fontSize: 14, color: "#555", lineHeight: 20 },
-
   placeholderDiagram: {
     height: 200,
     backgroundColor: "#F3F4F6",
@@ -351,7 +381,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // NEW VIDEO DEMONSTRATION STYLES
   videoSectionContainer: {
     marginTop: 24,
     borderTopWidth: 1,
@@ -366,7 +395,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginTop: 12,
   },
-  videoPlayer: {
+  mediaPlayer: {
+    // Shared style for video and images
     width: "100%",
     height: "100%",
   },
@@ -384,7 +414,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 4,
   },
-
   footer: {
     position: "absolute",
     bottom: 0,

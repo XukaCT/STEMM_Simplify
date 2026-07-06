@@ -94,7 +94,7 @@ export default function FeedCard({ item, onPress }: FeedCardProps) {
 
     // Default Video Thumbnail layout
     return (
-      <View style={[styles.thumbnail, { backgroundColor: "#FF5A00" }]}>
+      <View style={[styles.thumbnail, { backgroundColor: "#0284C7" }]}>
         <View
           style={[styles.heroBadge, { backgroundColor: "rgba(0,0,0,0.2)" }]}
         >
@@ -107,7 +107,7 @@ export default function FeedCard({ item, onPress }: FeedCardProps) {
                 <FontAwesome5
                   name="play"
                   size={20}
-                  color="#FF5A00"
+                  color="#0284C7"
                   style={styles.playIcon}
                 />
               </View>

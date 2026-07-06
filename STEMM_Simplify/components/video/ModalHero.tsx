@@ -94,7 +94,7 @@ export default function ModalHero({
         .map((r: any) => parseInt(r.score))
         .filter((n: number) => !isNaN(n));
       return {
-        bg: "#FF5A00",
+        bg: "#0284C7",
         icon: <Zap color="#fff" size={36} />,
         label: "BEST REACTION",
         value: times.length > 0 ? `${Math.min(...times)} ms` : "-- ms",
@@ -139,7 +139,7 @@ export default function ModalHero({
       };
     if (isEarthquake)
       return {
-        bg: "#B45309",
+        bg: "#0284C7",
         icon: <Activity color="#fff" size={36} />,
         label: "EARTHQUAKE SIM",
         value: "Logged",
@@ -339,9 +339,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 3,
     borderBottomColor: "transparent",
   },
-  videoToggleButtonActive: { borderBottomColor: "#FF5A00" },
+  videoToggleButtonActive: { borderBottomColor: "#0284C7" },
   videoToggleText: { fontSize: 14, fontWeight: "600", color: "#6B7280" },
-  videoToggleTextActive: { color: "#FF5A00" },
+  videoToggleTextActive: { color: "#0284C7" },
   dataHeroContainer: {
     width: "100%",
     height: 260,

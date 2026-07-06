@@ -68,13 +68,13 @@ const CodedSoundDiagram = () => (
         fontWeight: "bold",
       }}
     >
-      Distance (m)
+      Distance (cm)
     </Text>
     {/* Dropping Object & Sound Waves */}
     <View
       style={{ position: "absolute", top: 60, right: 60, alignItems: "center" }}
     >
-      <Ionicons name="volume-high" size={30} color="#8B5CF6" />
+      <Ionicons name="volume-high" size={40} color="#8B5CF6" />
       <Ionicons name="key" size={40} color="#0284C7" style={{ marginTop: 5 }} />
       <Text
         style={{
@@ -84,7 +84,7 @@ const CodedSoundDiagram = () => (
           fontWeight: "bold",
         }}
       >
-        Noisy source
+        Noisy Action
       </Text>
     </View>
   </View>
@@ -100,15 +100,15 @@ export default function SoundChallenge() {
       videoSource={require("../../assets/videos/sound_pollution.mp4")}
       equipmentList={[
         "Mobile phone with STEMM Lab app",
-        "Assorted noisy sources (keys, books, pens)",
+        "Assorted noisy objects (keys, books, pens)",
         "Measuring tape or ruler",
         "Quiet room to establish a baseline",
       ]}
       instructions={[
         "Ensure the room is quiet to establish a baseline.",
-        "Drop an object from a fixed height and measure the sound (dB).",
-        "Move the phone exactly 10cm away and repeat.",
-        "Test different actions (e.g., dropping keys, clapping).",
+        "Perform an action from a fixed point and measure the sound (dB).",
+        "Move the phone exactly 10 centimeters away and repeat.",
+        "Test different actions using any source (e.g., talking, dropping a book, jumping, keys, clapping).",
         "Save the results and analyze the data.",
       ]}
       knowledgeBlocks={[
@@ -127,12 +127,12 @@ export default function SoundChallenge() {
           ],
         },
         {
-          title: "Hearing Safety",
+          title: "Hearing Safety & Protection",
           details: [
             "• 30 dB: Whisper or quiet library",
             "• 60 dB: Normal conversation",
-            "• 85+ dB: Prolonged exposure can cause hearing loss",
-            "• 120+ dB: Threshold of pain (e.g., sirens)",
+            "• 85+ dB: Prolonged exposure can cause hearing loss. Earmuffs or hearing protection should be worn!",
+            "• 120+ dB: Threshold of pain (e.g., sirens). Immediate protection required.",
           ],
         },
         {

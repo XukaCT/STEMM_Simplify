@@ -26,12 +26,6 @@ const CodedEarthquakeDiagram = () => (
         backgroundColor: "#8B4513",
       }}
     />
-    <Ionicons
-      name="pulse"
-      size={40}
-      color="#EF4444"
-      style={{ position: "absolute", bottom: 20, left: "45%", opacity: 0.5 }}
-    />
 
     {/* Structure Base */}
     <View
@@ -143,7 +137,7 @@ export default function EarthquakeChallenge() {
       subtitle="Engineering & Physics"
       overview="Students design structures to withstand vibration, simulating earthquakes. They will test how different pillar shapes and materials absorb kinetic energy."
       diagram={<CodedEarthquakeDiagram />}
-      videoSource={require("../../assets/videos/earthquake_activity.mp4")}
+      imageSource={require("../../assets/images/earthquake.jpg")}
       equipmentList={[
         "Cardboard, paper, scissors, sticky tape",
         "Plastic/paper cups",
@@ -160,6 +154,7 @@ export default function EarthquakeChallenge() {
         {
           title: "Seismic Waves & Energy",
           details: [
+            "A seismograph is an instrument that measures and records ground vibrations caused by earthquakes.",
             "Earthquakes release kinetic energy through the ground as seismic waves.",
             "Rigid buildings transfer this energy straight up, causing them to crack or snap.",
           ],

@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   modalContent: { flex: 1, paddingHorizontal: 20 },
   titleSection: { paddingVertical: 20, paddingBottom: 10 },
   modalActivityLabel: {
-    color: "#FF5A00",
+    color: "#0284C7",
     fontSize: 12,
     fontWeight: "bold",
     letterSpacing: 1,

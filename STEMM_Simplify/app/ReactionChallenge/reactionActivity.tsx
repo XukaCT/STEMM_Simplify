@@ -272,7 +272,7 @@ export default function ReactionBoardActivity() {
         >
           <ArrowLeft color="#fff" size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Reaction Board Challenge</Text>
+        <Text style={styles.headerTitle}>Human Reaction Challenge</Text>
         <Text style={styles.headerSubtitle}>Neuroscience + Biology</Text>
       </View>
 

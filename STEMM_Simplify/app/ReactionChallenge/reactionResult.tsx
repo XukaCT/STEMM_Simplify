@@ -63,7 +63,7 @@ export default function ReactionResult() {
     try {
       const submissionData = {
         collectionName: "reaction_challenge",
-        activityName: "Reaction Board Challenge",
+        activityName: "Human Reaction Challenge",
         activityType: "reaction",
         title: "Reaction Test Complete!",
         teamName: "My Team",

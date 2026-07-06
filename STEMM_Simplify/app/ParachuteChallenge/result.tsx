@@ -92,11 +92,12 @@ export default function ParachuteResults() {
         : null;
 
       const activityData = {
+        collectionName: "parachute_challenge", // <-- ADD THIS for the filter
         activityName: "Parachute Drop",
         activityType: "video",
         title: "Parachute Drop Complete!",
         teamName: "My Team",
-        locationName: "Local Device", // Hardcoded
+        locationName: "Local Device",
         comments,
         videoUrl: localWithVideoUrl || localNoVideoUrl,
         noVideoUrl: localNoVideoUrl,
@@ -105,6 +106,8 @@ export default function ParachuteResults() {
         timeNo,
         heightWith,
         timeWith,
+        speedNo, // <-- ADD THIS for ModalResult
+        speedWith, // <-- ADD THIS for ModalResult
         points: finalScore,
       };
 

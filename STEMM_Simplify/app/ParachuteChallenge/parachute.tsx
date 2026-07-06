@@ -21,7 +21,7 @@ const CodedParachuteDiagram = () => (
       <Text style={{ fontSize: 10, color: "#6B7280", marginBottom: -5 }}>
         paper or plastic
       </Text>
-      <Ionicons name="umbrella" size={70} color="#0284C7" />
+      <Ionicons name="umbrella" size={40} color="#0284C7" />
       <View
         style={{
           flexDirection: "row",
@@ -51,7 +51,7 @@ const CodedParachuteDiagram = () => (
           }}
         />
       </View>
-      <Ionicons name="body" size={36} color="#111" style={{ marginTop: -5 }} />
+      <Ionicons name="body" size={20} color="#111" style={{ marginTop: -20 }} />
       <Text style={{ fontSize: 10, color: "#6B7280", fontWeight: "bold" }}>
         Toy Figurine
       </Text>
@@ -78,16 +78,6 @@ const CodedParachuteDiagram = () => (
         <View style={{ width: 12, height: 90, backgroundColor: "#8B4513" }} />
         <View style={{ width: 12, height: 90, backgroundColor: "#8B4513" }} />
       </View>
-      <Text
-        style={{
-          fontSize: 12,
-          color: "#6B7280",
-          marginTop: 8,
-          fontWeight: "bold",
-        }}
-      >
-        Table
-      </Text>
     </View>
 
     <View
@@ -159,6 +149,16 @@ export default function ParachuteChallenge() {
             "• 10-30 g: Sports collisions (Serious injuries possible)",
             "• 30-50 g: Severe crashes (High risk of severe injury)",
             "• 50+ g: Very sudden stops (Life-threatening)",
+          ],
+        },
+        {
+          title: "How to Calculate G-Force",
+          details: [
+            "1. Calculate Speed (v) = Height ÷ Fall Time",
+            "2. Calculate Impact Acceleration (a) = Speed ÷ Impact Time (Assume 0.1s for a hard toy hitting the floor).",
+            "3. Calculate Impact Force (F) = Toy Mass (kg) × Acceleration",
+            "4. Calculate G-Force = Acceleration ÷ 9.81 (Gravity)",
+            "Example: Toy hits at 5m/s and stops in 0.1s. Acceleration = 50 m/s². G-Force = 50 / 9.81 = 5.1 Gs!",
           ],
         },
         {

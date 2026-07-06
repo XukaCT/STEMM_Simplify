@@ -25,7 +25,7 @@ export const ACTIVITIES = [
   },
   {
     id: "4",
-    title: "Human Performance Lab",
+    title: "Human Movement Analysis",
     category: "Medical Science",
     desc: "Measure speed, smoothness, and coordination",
     icon: "pulse-outline",
@@ -33,7 +33,7 @@ export const ACTIVITIES = [
   },
   {
     id: "5",
-    title: "Reaction Board Challenge",
+    title: "Human Reaction Challenge",
     category: "Neuroscience",
     desc: "Measure reaction time and coordination",
     icon: "timer-outline",

@@ -45,77 +45,95 @@ const CodedFanDiagram = () => (
           fontWeight: "bold",
         }}
       >
-        Paper Fan
+        Folded Fan
       </Text>
     </View>
-    {/* Wind lines */}
-    <Ionicons
-      name="arrow-forward"
-      size={30}
-      color="#9CA3AF"
-      style={{ position: "absolute", bottom: 120, left: 110 }}
-    />
-    <Ionicons
-      name="arrow-forward"
-      size={30}
-      color="#9CA3AF"
-      style={{ position: "absolute", bottom: 90, left: 110 }}
-    />
-    {/* Paper Target */}
+
+    {/* Wind Lines */}
     <View
-      style={{ position: "absolute", top: 40, right: 60, alignItems: "center" }}
+      style={{
+        position: "absolute",
+        top: 130,
+        left: 90,
+        width: 60,
+        borderBottomWidth: 3,
+        borderStyle: "dashed",
+        borderColor: "#9CA3AF",
+        transform: [{ rotate: "-10deg" }],
+      }}
+    />
+    <View
+      style={{
+        position: "absolute",
+        top: 160,
+        left: 90,
+        width: 60,
+        borderBottomWidth: 3,
+        borderStyle: "dashed",
+        borderColor: "#9CA3AF",
+      }}
+    />
+
+    {/* Target Paper and Protractor */}
+    <View
+      style={{
+        position: "absolute",
+        top: 60,
+        right: 40,
+        alignItems: "center",
+        transform: [{ rotate: "180deg" }],
+      }}
     >
       <View
         style={{
           width: 80,
-          height: 10,
-          backgroundColor: "#111",
-          borderRadius: 4,
+          height: 40,
+          borderBottomWidth: 1,
+          borderStyle: "dashed",
+          borderColor: "#0284C7",
+          borderTopLeftRadius: 40,
+          borderTopRightRadius: 40,
+          backgroundColor: "rgba(2, 132, 199, 0.1)",
+        }}
+      />
+      <View
+        style={{
+          width: 2,
+          height: 100,
+          backgroundColor: "#EF4444",
+          transform: [{ rotate: "30deg" }],
+          transformOrigin: "top",
+          marginTop: -5,
         }}
       />
       <Text
         style={{
           fontSize: 10,
           color: "#6B7280",
-          marginBottom: 5,
+          marginTop: 15,
           fontWeight: "bold",
+          marginLeft: -30,
+          transform: [{ rotate: "180deg" }],
         }}
       >
-        Support
+        Target Bend
       </Text>
-      {/* Resting line */}
-      <View
-        style={{
-          width: 2,
-          height: 120,
-          backgroundColor: "#E5E7EB",
-          position: "absolute",
-          top: 10,
-        }}
-      />
-      {/* Bending line */}
-      <View
-        style={{
-          width: 4,
-          height: 120,
-          backgroundColor: "#00A2D9",
-          position: "absolute",
-          top: 10,
-          transform: [{ rotate: "-20deg" }],
-          transformOrigin: "top",
-        }}
-      />
-      <Text
-        style={{
-          fontSize: 12,
-          color: "#111",
-          fontWeight: "bold",
-          position: "absolute",
-          right: -30,
-          top: 80,
-        }}
-      >
-        Angle°
+    </View>
+
+    {/* Distance Measure */}
+    <View
+      style={{
+        position: "absolute",
+        bottom: 20,
+        left: 50,
+        right: 50,
+        borderBottomWidth: 2,
+        borderColor: "#111",
+        alignItems: "center",
+      }}
+    >
+      <Text style={{ fontSize: 10, color: "#111", marginBottom: 2 }}>
+        Distance (15cm - 45cm)
       </Text>
     </View>
   </View>
@@ -125,13 +143,14 @@ export default function HandFanChallenge() {
   return (
     <ActivityPrepScreen
       title="Hand Fan Challenge"
-      subtitle="Physics - Air Movement"
-      overview="Students design and test various paper hand fans to see which structure moves the most air. By measuring the bend angle of a paper target, they learn about air pressure, structural integrity, and aerodynamics."
+      subtitle="Physics + Engineering"
+      overview="Students design and build a paper hand fan. They will test how much air it moves by measuring the bend angle of a hanging paper strip, exploring the principles of air pressure and structural reinforcement."
       diagram={<CodedFanDiagram />}
-      videoSource={require("../../assets/videos/handfan.mp4")}
+      imageSource={require("../../assets/images/handfan.jpg")}
       equipmentList={[
         "Mobile phone with STEMM Lab app",
-        "Paper, cardboard, or plastic sheets",
+        "A4 Paper sheets",
+        "Paperclips and rubber bands",
         "Sticky tape and scissors",
         "A light strip of paper (the target)",
         "A ruler or measuring tape",
@@ -163,6 +182,15 @@ export default function HandFanChallenge() {
           details: [
             "Third Law: The fan pushes air forward, and the air pushes back (resistance).",
             "Second Law: Force = Mass x Acceleration. Pushing more air requires more physical force from your hand.",
+          ],
+        },
+        {
+          title: "Material Elasticity & Hooke's Law",
+          details: [
+            "• Hooke's Law Formula: F = -kx (Force equals the spring constant times the displacement).",
+            "• This law explains how materials bend and bounce back to their original shape.",
+            "• Elastic Limit: If the paper bends too far and does not bounce back, it has fractured its elasticity.",
+            "• Once permanently creased or broken, Hooke's Law no longer applies. You must change the target paper for an accurate test!",
           ],
         },
       ]}

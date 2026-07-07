@@ -1,7 +1,11 @@
 {
   "expo": {
     "name": "STEMM_Simplify",
+    "version": "1.0.0",
     "slug": "STEMM_Simplify",
+    "android": {
+      "versionCode": 1
+    },
     "androidNavigationBar": {
       "backgroundColor": "#000000"
     },

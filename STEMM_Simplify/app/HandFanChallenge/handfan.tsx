@@ -146,7 +146,7 @@ export default function HandFanChallenge() {
       subtitle="Physics + Engineering"
       overview="Students design and build a paper hand fan. They will test how much air it moves by measuring the bend angle of a hanging paper strip, exploring the principles of air pressure and structural reinforcement."
       diagram={<CodedFanDiagram />}
-      imageSource={require("../../assets/images/handfan.jpg")}
+      videoSource={require("../../assets/videos/handfan.mp4")}
       equipmentList={[
         "Mobile phone with STEMM Lab app",
         "A4 Paper sheets",

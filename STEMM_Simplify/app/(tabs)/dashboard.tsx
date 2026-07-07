@@ -55,12 +55,6 @@ export default function Dashboard() {
         !completedIds.includes("5")
       )
         completedIds.push("5");
-      // ADDED: Detector for Earthquake Challenge
-      if (
-        (name.includes("earthquake") || activityName.includes("earthquake")) &&
-        !completedIds.includes("6")
-      )
-        completedIds.push("6");
     });
     return completedIds;
   }, [feedItems]);
@@ -84,7 +78,7 @@ export default function Dashboard() {
   // 4. Calculate Percentage for the Progress Bar (UPDATED TO 6)
   // Using Math.round to avoid messy decimals like 16.666%
   const progressPercentage = Math.round(
-    (completedActivityIds.length / 6) * 100,
+    (completedActivityIds.length / 5) * 100,
   );
 
   return (
@@ -133,9 +127,9 @@ export default function Dashboard() {
                 <View style={styles.statsRow}>
                   <View style={styles.statBox}>
                     <Text style={styles.statLabel}>Experiments</Text>
-                    {/* UPDATED TO / 6 */}
+                    {/* UPDATED TO / 5 */}
                     <Text style={styles.statValue}>
-                      {completedActivityIds.length} / 6
+                      {completedActivityIds.length} / 5
                     </Text>
                   </View>
 

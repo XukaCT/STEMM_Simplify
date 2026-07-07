@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   Paperclip,
   Play,
-  Save,
   Trash2,
   Video as VideoIcon,
   Wind,
@@ -35,7 +34,6 @@ import { saveVideoLocally } from "../../utils/localStore";
 export default function ActivityPage() {
   const [activePhase, setActivePhase] = useState(1);
   const [fanDesign, setFanDesign] = useState("");
-  const [bendAngle, setBendAngle] = useState("");
   const [distance, setDistance] = useState(30);
 
   const router = useRouter();
@@ -44,9 +42,11 @@ export default function ActivityPage() {
 
   const [tempVideoUri, setTempVideoUri] = useState<string | null>(null);
 
-  // Rewatch Modal State
+  // Rewatch / Analysis Modal State
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   const [currentPlayUri, setCurrentPlayUri] = useState<string | null>(null);
+  const [currentPlayId, setCurrentPlayId] = useState<string | null>(null);
+  const [modalAngleInput, setModalAngleInput] = useState("");
 
   // CUSTOM CAMERA STATE
   const cameraRef = useRef<CameraView>(null);
@@ -66,7 +66,7 @@ export default function ActivityPage() {
     }[]
   >([]);
 
-  // OPENS THE CUSTOM IN-APP CAMERA WITH PROTRACTOR OVERLAY
+  // OPENS THE CUSTOM IN-APP CAMERA
   const handleOpenCamera = async () => {
     if (!camPermission?.granted) {
       const camReq = await requestCamPermission();
@@ -99,7 +99,7 @@ export default function ActivityPage() {
           setIsCameraOpen(false);
           Alert.alert(
             "Success",
-            "Video recorded! Click 'Save Result' to attach it.",
+            "Video recorded! Click 'Video Analysis' to measure your angle.",
           );
         }
       } catch (e) {
@@ -110,13 +110,14 @@ export default function ActivityPage() {
     }
   };
 
-  const handleSaveResult = async () => {
-    if (!fanDesign || !bendAngle) {
+  // NOW TAKES THE MEASURED ANGLE DIRECTLY FROM THE MODAL
+  const handleSaveResult = async (measuredAngle: string) => {
+    if (!fanDesign) {
       Alert.alert(
         "Missing Details",
-        "Please enter a fan design name and bend angle.",
+        "Please enter a fan design name before saving.",
       );
-      return;
+      return false; // Tells the modal the save failed so it can close and let the user type
     }
 
     let permanentUri = null;
@@ -133,14 +134,14 @@ export default function ActivityPage() {
       design: fanDesign,
       phase: `Phase ${activePhase}`,
       distance: `${distance}cm`,
-      angle: `${bendAngle}°`,
+      angle: `${measuredAngle}°`,
       videoUri: permanentUri,
     };
 
     setResults([newResult, ...results]);
     setFanDesign("");
-    setBendAngle("");
     setTempVideoUri(null);
+    return true; // Tells the modal the save was successful
   };
 
   const handleDeleteResult = (id: string) => {
@@ -151,7 +152,7 @@ export default function ActivityPage() {
     if (tempVideoUri) {
       Alert.alert(
         "Unsaved Video",
-        "Click 'Save Result' to attach your recorded video before completing.",
+        "You have an unanalyzed video. Click 'Video Analysis' to save it before completing.",
       );
       return;
     }
@@ -159,7 +160,7 @@ export default function ActivityPage() {
     if (results.length === 0) {
       Alert.alert(
         "Missing Data",
-        "Please test a fan design and click 'Save Result' before continuing.",
+        "Please test a fan design and analyze the video before continuing.",
       );
       return;
     }
@@ -285,8 +286,8 @@ export default function ActivityPage() {
           <Text style={styles.label}>Distance: {distance}cm</Text>
           <Slider
             style={styles.slider}
-            minimumValue={15}
-            maximumValue={45}
+            minimumValue={5}
+            maximumValue={20}
             step={5}
             value={distance}
             onValueChange={setDistance}
@@ -295,19 +296,11 @@ export default function ActivityPage() {
             thumbTintColor="#0284C7"
           />
           <View style={styles.rulerContainer}>
+            <Text style={styles.rulerText}>5cm</Text>
+            <Text style={styles.rulerText}>10cm</Text>
             <Text style={styles.rulerText}>15cm</Text>
-            <Text style={styles.rulerText}>30cm</Text>
-            <Text style={styles.rulerText}>45cm</Text>
+            <Text style={styles.rulerText}>20cm</Text>
           </View>
-
-          <Text style={styles.label}>Bend Angle (degrees)</Text>
-          <TextInput
-            style={[styles.input, styles.largeInput]}
-            value={bendAngle}
-            onChangeText={setBendAngle}
-            keyboardType="numeric"
-            placeholder="0"
-          />
 
           <TouchableOpacity
             style={[
@@ -327,18 +320,37 @@ export default function ActivityPage() {
               ]}
             >
               {tempVideoUri
-                ? "Video Queued! (Click Save Result)"
+                ? "Video Recorded! (Tap to re-record)"
                 : "Record Video"}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={handleSaveResult}
-          >
-            <Save size={20} color="#fff" />
-            <Text style={styles.saveButtonText}>Save Result</Text>
-          </TouchableOpacity>
+          {/* Video Analysis Button */}
+          {tempVideoUri && (
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#0284C7", // Brand orange for distinction
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 14,
+                borderRadius: 8,
+                gap: 8,
+                marginBottom: 12,
+              }}
+              onPress={() => {
+                setCurrentPlayUri(tempVideoUri);
+                setCurrentPlayId("TEMP"); // Mark as temporary unsaved video
+                setModalAngleInput("");
+                setIsPlayingVideo(true);
+              }}
+            >
+              <Play size={20} color="#fff" />
+              <Text style={{ color: "#fff", fontWeight: "600", fontSize: 15 }}>
+                Video Analysis
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.card}>
@@ -346,7 +358,7 @@ export default function ActivityPage() {
 
           {results.length === 0 ? (
             <Text style={styles.emptyText}>
-              No results saved yet. Run a test and click Save!
+              No results saved yet. Run a test and click Video Analysis!
             </Text>
           ) : (
             results.map((item) => (
@@ -370,6 +382,8 @@ export default function ActivityPage() {
                     <TouchableOpacity
                       onPress={() => {
                         setCurrentPlayUri(item.videoUri!);
+                        setCurrentPlayId(item.id); // Track the ID
+                        setModalAngleInput(""); // Reset the input field
                         setIsPlayingVideo(true);
                       }}
                     >
@@ -396,7 +410,7 @@ export default function ActivityPage() {
         </View>
       </ScrollView>
 
-      {/* REWATCH MODAL */}
+      {/* REWATCH & ANALYSIS MODAL WITH PROTRACTOR */}
       <Modal
         visible={isPlayingVideo}
         transparent={true}
@@ -404,60 +418,42 @@ export default function ActivityPage() {
         onRequestClose={() => setIsPlayingVideo(false)}
       >
         <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.9)",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
+          style={{ flex: 1, backgroundColor: "#000", position: "relative" }}
         >
           <TouchableOpacity
             style={{
               position: "absolute",
               top: 50,
               right: 20,
-              zIndex: 10,
+              zIndex: 30,
               padding: 8,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              borderRadius: 20,
             }}
             onPress={() => {
               setIsPlayingVideo(false);
               setCurrentPlayUri(null);
+              setCurrentPlayId(null);
             }}
           >
             <X size={32} color="#fff" />
           </TouchableOpacity>
+
           {currentPlayUri && (
             <ExpoVideo
               source={{ uri: currentPlayUri }}
-              style={{ width: "100%", height: "80%" }}
+              style={{ flex: 1 }}
               useNativeControls
-              resizeMode={ResizeMode.CONTAIN}
+              resizeMode={ResizeMode.COVER}
               shouldPlay
+              isLooping
             />
           )}
-        </View>
-      </Modal>
-
-      {/*   FIXED CUSTOM CAMERA MODAL WITH PROTRACTOR OVERLAY   */}
-      <Modal
-        visible={isCameraOpen}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setIsCameraOpen(false)}
-      >
-        <View style={styles.cameraContainer}>
-          <CameraView
-            style={styles.camera}
-            ref={cameraRef}
-            mode="video"
-            facing="back"
-          />
 
           {/* THE PROTRACTOR RULER OVERLAY */}
           <View style={styles.protractorOverlay} pointerEvents="none">
-            {/* Renders lines from -90 (West) to 90 (East) in 5-degree steps */}
             {Array.from({ length: 37 }, (_, i) => -90 + i * 5).map((angle) => {
-              const isMajor = angle % 15 === 0; // 0, 15, 30, 45...
+              const isMajor = angle % 15 === 0;
               const isZero = angle === 0;
 
               return (
@@ -469,20 +465,16 @@ export default function ActivityPage() {
                   ]}
                 >
                   <View style={styles.angleTopHalf}>
-                    {/* Only show the number bubble on major 15-degree lines */}
                     {isMajor && (
                       <View
                         style={[
                           styles.angleLabelContainer,
-                          // Use ${-angle} to invert properly without double-minuses
                           { transform: [{ rotate: `${-angle}deg` }] },
                         ]}
                       >
                         <Text style={styles.angleLabel}>{Math.abs(angle)}</Text>
                       </View>
                     )}
-
-                    {/* The actual line (Short for minor, Long for major) */}
                     <View
                       style={[
                         styles.actualLine,
@@ -498,11 +490,111 @@ export default function ActivityPage() {
                 </View>
               );
             })}
-
             <View style={styles.pivotPoint} />
             <View style={styles.alignmentBox} />
             <Text style={styles.alignmentText}>Align Paper Hinge Here</Text>
           </View>
+
+          {/* MEASUREMENT SAVER CONTROLS */}
+          <View
+            style={{
+              position: "absolute",
+              bottom: 40,
+              width: "100%",
+              alignItems: "center",
+              zIndex: 40,
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: "rgba(0,0,0,0.8)",
+                padding: 16,
+                borderRadius: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                Max Angle:
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: "#fff",
+                  width: 70,
+                  height: 40,
+                  borderRadius: 8,
+                  textAlign: "center",
+                  fontSize: 16,
+                  fontWeight: "bold",
+                }}
+                keyboardType="numeric"
+                placeholder="0"
+                value={modalAngleInput}
+                onChangeText={setModalAngleInput}
+              />
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#10B981",
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  borderRadius: 8,
+                }}
+                onPress={async () => {
+                  if (modalAngleInput) {
+                    if (currentPlayId === "TEMP") {
+                      // Trigger the actual save sequence
+                      const success = await handleSaveResult(modalAngleInput);
+                      if (success) {
+                        setIsPlayingVideo(false);
+                        setCurrentPlayUri(null);
+                        setCurrentPlayId(null);
+                      } else {
+                        // Close it so they can fix missing Fan Design name
+                        setIsPlayingVideo(false);
+                      }
+                    } else {
+                      // If editing an already saved result, just update the array
+                      setResults(
+                        results.map((r) =>
+                          r.id === currentPlayId
+                            ? { ...r, angle: `${modalAngleInput}°` }
+                            : r,
+                        ),
+                      );
+                      setIsPlayingVideo(false);
+                      setCurrentPlayUri(null);
+                      setCurrentPlayId(null);
+                    }
+                  } else {
+                    Alert.alert(
+                      "Missing Angle",
+                      "Please enter the angle you observed.",
+                    );
+                  }
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* FIXED CUSTOM CAMERA MODAL WITHOUT PROTRACTOR */}
+      <Modal
+        visible={isCameraOpen}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setIsCameraOpen(false)}
+      >
+        <View style={styles.cameraContainer}>
+          <CameraView
+            style={styles.camera}
+            ref={cameraRef}
+            mode="video"
+            facing="back"
+          />
 
           {/* CAMERA CONTROLS */}
           <View style={styles.cameraControlsContainer} pointerEvents="box-none">
@@ -559,7 +651,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 8,
   },
-  toggleActive: { backgroundColor: "#0284C7" }, // CHANGED to brand orange
+  toggleActive: { backgroundColor: "#0284C7" },
   toggleInactive: { backgroundColor: "#F5F5F5" },
   toggleText: { fontWeight: "600", fontSize: 15 },
   toggleTextActive: { color: "#fff" },
@@ -598,7 +690,6 @@ const styles = StyleSheet.create({
     color: "#333",
     marginBottom: 16,
   },
-  largeInput: { fontSize: 18, paddingVertical: 12 },
   slider: { width: "100%", height: 40, marginTop: -5 },
   rulerContainer: {
     flexDirection: "row",
@@ -616,22 +707,12 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: "#0284C7", // CHANGED to brand orange
+    borderColor: "#0284C7",
     borderStyle: "dashed",
     gap: 8,
     marginBottom: 12,
   },
-  recordButtonText: { color: "#0284C7", fontWeight: "600", fontSize: 15 }, // CHANGED to brand orange
-  saveButton: {
-    backgroundColor: "green", // CHANGED to brand orange
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: 8,
-    gap: 8,
-  },
-  saveButtonText: { color: "#fff", fontWeight: "600", fontSize: 15 },
+  recordButtonText: { color: "#0284C7", fontWeight: "600", fontSize: 15 },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
@@ -684,11 +765,11 @@ const styles = StyleSheet.create({
   },
   completeButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 
-  // --- NEW CAMERA OVERLAY STYLES ---
+  // --- CAMERA CONTAINER STYLES ---
   cameraContainer: { flex: 1, backgroundColor: "#000", position: "relative" },
   camera: { ...StyleSheet.absoluteFillObject },
 
-  // --- FLIPPED PROTRACTOR OVERLAY STYLES ---
+  // --- PROTRACTOR OVERLAY STYLES ---
   protractorOverlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
@@ -743,21 +824,21 @@ const styles = StyleSheet.create({
   },
   majorLine: {
     width: 2,
-    height: 180, // Long line for numbers
+    height: 180,
   },
   minorLine: {
     width: 1,
-    height: 155, // Shorter line for ticks
+    height: 155,
     backgroundColor: "rgba(255, 90, 0, 0.3)",
   },
   zeroDegreeLine: {
     backgroundColor: "rgba(16, 185, 129, 0.8)",
     width: 3,
-    height: 190, // Longest baseline
+    height: 190,
   },
   angleLabelContainer: {
     position: "absolute",
-    bottom: 185, // Hovers perfectly right above the major lines
+    bottom: 185,
     backgroundColor: "rgba(0,0,0,0.7)",
     paddingHorizontal: 6,
     paddingVertical: 2,

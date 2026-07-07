@@ -16,7 +16,6 @@ import { FeedItem, useMegaFeed } from "../../hooks/useMegaFeed";
 // Added "Earthquake" to the filter list so it shows up!
 const FILTERS = [
   "All Teams",
-  "Earthquake",
   "Parachute Drop",
   "Reaction Board",
   "Human Performance",
@@ -34,7 +33,6 @@ export default function VideoHubScreen() {
       ? feedItems
       : feedItems.filter((item) => {
           const filterMap: { [key: string]: string } = {
-            Earthquake: "earthquake",
             "Parachute Drop": "parachute",
             "Reaction Board": "reaction",
             "Human Performance": "human_performance",

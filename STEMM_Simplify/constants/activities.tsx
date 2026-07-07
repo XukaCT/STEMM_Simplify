@@ -39,12 +39,4 @@ export const ACTIVITIES = [
     icon: "timer-outline",
     routeName: "ReactionChallenge/reaction",
   },
-  {
-    id: "6",
-    title: "Earthquake Challenge",
-    category: "Engineering",
-    desc: "Design structures to withstand simulated earthquakes",
-    icon: "construct-outline",
-    routeName: "EarthquakeChallenge/earthquake",
-  },
 ];

@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "slug": "STEMM_Simplify",
     "android": {
-      "versionCode": 1
+      "versionCode": 3
     },
     "androidNavigationBar": {
       "backgroundColor": "#000000"
@@ -32,7 +32,7 @@
         "android.permission.CAMERA",
         "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
       ],
-      "package": "aa.sa"
+      "package": "com.STEMM_simplify"
     },
     "web": {
       "output": "static",

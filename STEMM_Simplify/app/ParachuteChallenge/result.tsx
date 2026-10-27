@@ -1,6 +1,6 @@
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Check, MessageSquare, Timer, Video } from "lucide-react-native";
+import { Check, MessageSquare, Timer, Video, Activity } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -15,20 +15,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import DropComparison from "../../components/parachute/DropComparison";
 import UploadPlaceholder from "../../components/parachute/UploadPlaceholder";
 import { GlobalStyles } from "../../constants/GlobalStyles";
-
 import { saveActivityToFeed, saveVideoLocally } from "../../utils/localStore";
 
 export default function ParachuteResults() {
   const router = useRouter();
   const params = useLocalSearchParams();
-
   const [videoNoUri, setVideoNoUri] = useState<string | null>(
     (params.videoNoUri as string) || null,
   );
   const [videoWithUri, setVideoWithUri] = useState<string | null>(
     (params.videoWithUri as string) || null,
   );
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [comments, setComments] = useState("");
 
@@ -39,9 +36,23 @@ export default function ParachuteResults() {
 
   const speedNo = timeNo > 0 ? (heightNo / timeNo).toFixed(2) : "0.00";
   const speedWith = timeWith > 0 ? (heightWith / timeWith).toFixed(2) : "0.00";
+
   const timeDiffPercent =
     timeNo > 0 ? (((timeWith - timeNo) / timeNo) * 100).toFixed(1) : "0.0";
   const isSuccess = parseFloat(timeDiffPercent) > 0;
+
+  // --- NEW G-FORCE CALCULATIONS ---
+  const calculateGForce = (speedStr: string) => {
+    const v = parseFloat(speedStr);
+    if (isNaN(v) || v <= 0) return "0.00";
+    const impactAcceleration = v / 0.1; // 0.1s impact time
+    const gForce = impactAcceleration / 9.81; // Gravity = 9.81 m/s²
+    return gForce.toFixed(2);
+  };
+
+  const gForceNo = calculateGForce(speedNo);
+  const gForceWith = calculateGForce(speedWith);
+  // --------------------------------
 
   const calculatePoints = () => {
     const basePoints = 1000;
@@ -50,10 +61,8 @@ export default function ParachuteResults() {
       parseFloat(speedNo) - parseFloat(speedWith),
     );
     const performancePoints = Math.floor(speedDifference * 300);
-
     return basePoints + performancePoints;
   };
-
   const finalScore = calculatePoints();
 
   const pickVideo = async (type: "no" | "with") => {
@@ -62,7 +71,6 @@ export default function ParachuteResults() {
       allowsEditing: false,
       quality: 1,
     });
-
     if (!result.canceled && result.assets && result.assets.length > 0) {
       if (type === "no") setVideoNoUri(result.assets[0].uri);
       if (type === "with") setVideoWithUri(result.assets[0].uri);
@@ -72,10 +80,8 @@ export default function ParachuteResults() {
   const handleSubmit = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
-
     try {
       const timestamp = Date.now();
-
       const localNoVideoUrl = videoNoUri
         ? await saveVideoLocally(
             videoNoUri,
@@ -92,7 +98,7 @@ export default function ParachuteResults() {
         : null;
 
       const activityData = {
-        collectionName: "parachute_challenge", // <-- ADD THIS for the filter
+        collectionName: "parachute_challenge",
         activityName: "Parachute Drop",
         activityType: "video",
         title: "Parachute Drop Complete!",
@@ -106,13 +112,14 @@ export default function ParachuteResults() {
         timeNo,
         heightWith,
         timeWith,
-        speedNo, // <-- ADD THIS for ModalResult
-        speedWith, // <-- ADD THIS for ModalResult
+        speedNo,
+        speedWith,
+        gForceNo,   // Saved to DB for Modal rendering
+        gForceWith, // Saved to DB for Modal rendering
         points: finalScore,
       };
-
+      
       await saveActivityToFeed(activityData);
-
       setIsSubmitting(false);
       router.replace("/(tabs)/dashboard");
     } catch (e) {
@@ -156,14 +163,34 @@ export default function ParachuteResults() {
           />
         </View>
 
+        {/* --- NEW G-FORCE UI CARD --- */}
+        <View style={GlobalStyles.card}>
+          <View style={GlobalStyles.cardHeader}>
+            <Activity size={20} color="#10B981" />
+            <Text style={GlobalStyles.cardTitle}>Impact G-Force</Text>
+          </View>
+          <View style={styles.gForceRow}>
+            <View style={styles.gForceCol}>
+              <Text style={styles.gForceLabel}>Without Parachute</Text>
+              <Text style={[styles.gForceValue, { color: "#EF4444" }]}>{gForceNo} G</Text>
+            </View>
+            <View style={styles.gForceDivider} />
+            <View style={styles.gForceCol}>
+              <Text style={styles.gForceLabel}>With Parachute</Text>
+              <Text style={[styles.gForceValue, { color: "#10B981" }]}>{gForceWith} G</Text>
+            </View>
+          </View>
+          <Text style={styles.gForceSubtext}>
+            Calculated using speed and a 0.1s impact time.
+          </Text>
+        </View>
+
         <View style={GlobalStyles.card}>
           <View style={GlobalStyles.cardHeader}>
             <Video size={20} color="#10B981" />
             <Text style={GlobalStyles.cardTitle}>
               Experiment Videos{" "}
-              <Text
-                style={{ color: "#9CA3AF", fontSize: 13, fontWeight: "normal" }}
-              >
+              <Text style={{ color: "#9CA3AF", fontSize: 13, fontWeight: "normal" }}>
                 (Optional)
               </Text>
             </Text>
@@ -190,7 +217,6 @@ export default function ParachuteResults() {
                 onPress={() => pickVideo("no")}
               />
             )}
-
             {videoWithUri ? (
               <View
                 style={[
@@ -269,6 +295,37 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  gForceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+    marginBottom: 8,
+  },
+  gForceCol: {
+    alignItems: "center",
+    flex: 1,
+  },
+  gForceLabel: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginBottom: 4,
+  },
+  gForceValue: {
+    fontSize: 26,
+    fontWeight: "bold",
+  },
+  gForceDivider: {
+    width: 1,
+    backgroundColor: "#E5E7EB",
+    marginHorizontal: 10,
+  },
+  gForceSubtext: {
+    fontSize: 11,
+    color: "#9CA3AF",
+    textAlign: "center",
+    marginTop: 8,
+    fontStyle: "italic",
   },
   understandingBox: {
     backgroundColor: "#EFF6FF",

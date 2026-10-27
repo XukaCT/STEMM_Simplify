@@ -1,5 +1,14 @@
+import { Audio } from "expo-av";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, CheckCircle, Pencil, X, Zap } from "lucide-react-native";
+import {
+  ArrowLeft,
+  CheckCircle,
+  Pencil,
+  Volume2,
+  VolumeX,
+  X,
+  Zap,
+} from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -21,6 +30,34 @@ export default function ReactionBoardActivity() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { startTime } = params;
+
+  // --- NEW AUDIO STATE ---
+  const [isMuted, setIsMuted] = useState(false);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+
+  // --- NEW AUDIO FUNCTION ---
+  async function playCueSound() {
+    if (isMuted) return;
+    try {
+      // NOTE: Make sure you add a small "beep.mp3" file to your assets/sounds folder!
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        require("../../assets/sounds/beep.wav"),
+      );
+      setSound(newSound);
+      await newSound.playAsync();
+    } catch (error) {
+      console.log("Error playing sound", error);
+    }
+  }
+
+  // Cleanup sound when component unmounts
+  useEffect(() => {
+    return sound
+      ? () => {
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
 
   // Global State
   const [activePhase, setActivePhase] = useState<1 | 2>(1);
@@ -127,6 +164,7 @@ export default function ReactionBoardActivity() {
 
   const scheduleNextBox = () => {
     setBoxPos(null); // Hide the box to show "Get Ready..."
+
     // Wait between 0.5s and 2.0s
     const delay = Math.floor(Math.random() * 1500) + 500;
 
@@ -137,6 +175,8 @@ export default function ReactionBoardActivity() {
 
       setBoxPos({ top, left });
       reactionStartTime.current = Date.now();
+      // Play the audio cue
+      playCueSound();
     }, delay);
   };
 
@@ -647,6 +687,17 @@ export default function ReactionBoardActivity() {
         onRequestClose={() => setIsFullScreenTest(false)}
       >
         <SafeAreaView style={styles.fullScreenModal}>
+          {/* NEW MUTE BUTTON (Top Left) */}
+          <TouchableOpacity
+            style={styles.modalMuteButton}
+            onPress={() => setIsMuted(!isMuted)}
+          >
+            {isMuted ? (
+              <VolumeX size={32} color="#FFF" />
+            ) : (
+              <Volume2 size={32} color="#FFF" />
+            )}
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.modalCloseButton}
             onPress={() => {
@@ -889,6 +940,13 @@ const styles = StyleSheet.create({
   fullScreenModal: {
     flex: 1,
     backgroundColor: "#000",
+  },
+  modalMuteButton: {
+    position: "absolute",
+    top: 40,
+    left: 20,
+    zIndex: 10,
+    padding: 8,
   },
   modalCloseButton: {
     position: "absolute",

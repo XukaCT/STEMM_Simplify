@@ -10,7 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 export interface KnowledgeBlock {
   title: string;
@@ -47,6 +50,7 @@ export default function ActivityPrepScreen({
   const [checkedItems, setCheckedItems] = useState(
     new Array(equipmentList.length).fill(false),
   );
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const forceAudioPlayback = async () => {
@@ -262,7 +266,7 @@ export default function ActivityPrepScreen({
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
         <TouchableOpacity
           style={styles.startButton}
           activeOpacity={0.8}
